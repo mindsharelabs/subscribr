@@ -21,15 +21,18 @@ $es_options = new mindshare_options_framework(
 		 'fields'       => array(),
 	)
 );
+
 $es_options->OpenTabs_container('');
 
 $es_options_label = 'General Options';
+$es_options_label2 = 'Taxonomy Options';
 
 $es_options->TabsListing(
 	array(
 		 'links' =>
 		 array(
 			 sanitize_title($es_options_label)  => __($es_options_label, 'email-subscribe'),
+			 sanitize_title($es_options_label2)  => __($es_options_label2, 'email-subscribe'),
 		 )
 	)
 );
@@ -59,6 +62,33 @@ $es_options->addText(
 		 'desc' => ''
 	)
 );
+$es_options->CloseTab();
+
+/*
+ * tab start
+ */
+
+$es_options->OpenTab(sanitize_title($es_options_label2));
+$es_options->Title($es_options_label2);
+
+
+// taxonomy choices @todo add select all/none toggle to Mindshare Options Framewwork
+$taxonomies = get_taxonomies();
+$disabled_taxonomies = array('nav_menu', 'post_format', 'link_category');
+$taxonomies = array_diff($taxonomies, $disabled_taxonomies);
+$es_options->addTaxonomy(
+	'taxonomies',
+	array(
+		 'taxonomy' => $taxonomies,
+		 'type'  => 'checkbox_list',
+	),
+	array(
+		 'name' => 'Enabled Terms',
+		 'desc' => 'Choose the terms you wish to allow users to subscribe on their profile.'
+	),
+	FALSE
+);
+
 $es_options->CloseTab();
 
 /*
