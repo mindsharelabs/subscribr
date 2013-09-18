@@ -1,6 +1,6 @@
 <?php
 /**
- * default_email_template.php
+ * default-email-template.php
  *
  * @created   9/17/13 3:26 PM
  * @author    Mindshare Studios, Inc.

@@ -1,6 +1,6 @@
 <?php
 /**
- * profile_fields.php
+ * profile-fields.php
  * 
  * @created 9/17/13 3:24 PM
  * @author Mindshare Studios, Inc.
