@@ -177,7 +177,7 @@ if(!class_exists("EmailSubscribe")) :
 		 * @param $user
 		 */
 		public function user_profile_fields($user) {
-			include_once('views/profile-fields.php');
+			include_once('views/profile_fields.php');
 		}
 
 		/**
