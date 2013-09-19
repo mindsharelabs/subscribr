@@ -2,7 +2,7 @@
 Contributors: mindshare
 Donate link: http://mind.sh/are/donate/
 Tags: email, notification, subscribe
-Requires at least: 3.4
+Requires at least: 3.5
 Tested up to: 3.6.1
 Stable tag: trunk
 License: GPLv3

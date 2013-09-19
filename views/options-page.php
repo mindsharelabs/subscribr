@@ -22,18 +22,28 @@ $es_options = new mindshare_options_framework(
 	)
 );
 
+// setup Tab labels
+$es_options_labels = array(
+	'Email Options',
+	'Taxonomy Options',
+	'Mail Scheduling',
+	'Third Party Integration'
+);
+// filter allows plugins to add new tabs
+$es_options_labels = array_merge($es_options_labels, apply_filters('es_option_title', array()));
+$es_tabs = array();
+foreach($es_options_labels as $label) {
+	$es_tabs[sanitize_title($label)] = __($label, 'email-subscribe');
+}
+$es_tabs_keys = array_keys($es_tabs);
+
+// start the options page
 $es_options->OpenTabs_container('');
 
-$es_options_label = 'General Options';
-$es_options_label2 = 'Taxonomy Options';
-
+// start the left hand nav
 $es_options->TabsListing(
 	array(
-		 'links' =>
-		 array(
-			 sanitize_title($es_options_label)  => __($es_options_label, 'email-subscribe'),
-			 sanitize_title($es_options_label2) => __($es_options_label2, 'email-subscribe'),
-		 )
+		 'links' => $es_tabs
 	)
 );
 
@@ -41,8 +51,8 @@ $es_options->TabsListing(
  * tab start
  */
 
-$es_options->OpenTab(sanitize_title($es_options_label));
-$es_options->Title($es_options_label);
+$es_options->OpenTab($es_tabs_keys[0]);
+$es_options->Title($es_tabs[$es_tabs_keys[0]]);
 
 $es_options->addText(
 	'from_name',
@@ -67,15 +77,22 @@ $es_options->CloseTab();
  * tab start
  */
 
-$es_options->OpenTab(sanitize_title($es_options_label2));
-$es_options->Title($es_options_label2);
+$es_options->OpenTab($es_tabs_keys[1]);
+$es_options->Title($es_tabs[$es_tabs_keys[1]]);
 
-// taxonomy choices @todo add select all/none toggle to Mindshare Options Framework
-$taxonomies = get_taxonomies();
-$disabled_taxonomies = array('nav_menu', 'post_format', 'link_category');
-$taxonomies = array_diff($taxonomies, $disabled_taxonomies);
+$es_options->addCheckbox(
+	'enable_all_terms',
+	array(
+		 'name' => __('Enable All Terms', 'email-subscribe'),
+		 'desc' => __('Turning this on will override any taxonomy terms enabled below.', 'email-subscribe')
+	)
+);
+
+// term choices @todo add select all/none toggle to Mindshare Options Framework
+
+$taxonomies = $this->default_taxonomies();
 $es_options->addTaxonomy(
-	'taxonomies',
+	'enabled_terms',
 	array(
 		 'taxonomy' => $taxonomies,
 		 'type'     => 'checkbox_list',
@@ -88,6 +105,35 @@ $es_options->addTaxonomy(
 );
 
 $es_options->CloseTab();
+
+/*
+ * tab start
+ */
+
+$es_options->OpenTab($es_tabs_keys[2]);
+$es_options->Title($es_tabs[$es_tabs_keys[2]]);
+
+$es_options->addParagraph(
+	'Feature not yet implemented.'
+);
+
+$es_options->CloseTab();
+
+/*
+ * tab start
+ */
+
+$es_options->OpenTab($es_tabs_keys[3]);
+$es_options->Title($es_tabs[$es_tabs_keys[3]]);
+
+$es_options->addParagraph(
+	'Feature not yet implemented.'
+);
+
+$es_options->CloseTab();
+
+// action to allow plugging in extra options
+do_action('es_option_add', $es_options);
 
 /*
  * Help Tabs
@@ -118,3 +164,4 @@ $es_options->HelpTab(
 		 'content' => $secure_tab_content
 	)
 );
+

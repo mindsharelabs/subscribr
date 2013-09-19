@@ -8,6 +8,8 @@
  * @link      http://www.mindsharelabs.com/documentation/
  *
  */
+
+/*
 $permalink = get_permalink($post_id);
 $posttitle = get_the_title($post_id);
 global $post;
@@ -20,4 +22,5 @@ $permalink .= "?utm_source=blogtoemail&utm_medium=email&utm_campaign=blogtoemail
 $template["htmlBody"] = "compose HTML email content here";
 
 $contacts = "put a query here to pull an array of contacts who want the email";
-?>
+
+*/

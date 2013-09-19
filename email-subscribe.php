@@ -33,10 +33,24 @@ Domain Path: /lang
  *
  * ToDo List:
  *
- * @todo      - internationalize
- * @todo      - add options page
+ * @todo      - finish internationalizing
+ * @todo      - add email editor(s) to options page
+ * @todo      - add html/plain text options
+ * @todo      - add scheduling options / digest mode
  * @todo      - add default email template file (or several)
- * @todo      - add plugin_action_links
+ *
+ * Premium features:
+ *
+ * @todo      - add integration with MailChimp/Mandrill
+ * @todo      - add integration with Constant Contact
+ * @todo      - add CSV subscriber export
+ * @todo      - add subscriber management to settings
+ * @todo      - add integration with 3rd-party SMTP servers and/or advanced SMTP settings
+ *
+ * Developer Notes:
+ *
+ * Made one minor CSS change to make Chosen work well on WordPress user profiles,
+ * this will need to be retested if we upgrade Chosen.
  *
  * Changelog:
  *
@@ -45,7 +59,7 @@ Domain Path: /lang
  */
 
 if(!defined('ES_MIN_WP_VERSION')) {
-	define('ES_MIN_WP_VERSION', '3.4');
+	define('ES_MIN_WP_VERSION', '3.5');
 }
 
 if(!defined('ES_PLUGIN_NAME')) {
@@ -96,14 +110,22 @@ if(!class_exists("EmailSubscribe")) :
 		private $version = '0.1';
 
 		/**
+		 * @var        $options - holds all plugin options
+		 */
+		protected $options;
+
+		/**
 		 * Initialize the plugin. Set up actions / filters.
 		 *
 		 */
 		public function __construct() {
 
+			// load scripts, etc
+			add_action('wp_print_scripts', array($this, 'print_scripts'));
+
 			// i8n
 			add_action('plugins_loaded', array($this, 'load_textdomain'));
-			
+
 			// action links
 			add_filter('plugin_action_links', array($this, 'plugin_action_links'), 10, 2);
 
@@ -119,7 +141,8 @@ if(!class_exists("EmailSubscribe")) :
 			add_action('personal_options_update', array($this, 'update_user_meta'));
 			add_action('edit_user_profile_update', array($this, 'update_user_meta'));
 
-			$this->options_init();
+			// setup the options page
+			add_action('init', array($this, 'options_init'));
 		}
 
 		/**
@@ -139,6 +162,35 @@ if(!class_exists("EmailSubscribe")) :
 			load_plugin_textdomain('email-subscribe', FALSE, ES_PLUGIN_SLUG);
 		}
 
+		public function print_scripts() {
+
+			// register scripts
+			$scripts = array();
+			$scripts[] = array(
+				'handle' => 'chosen-js',
+				'src'    => ES_DIR_URL.'lib/chosen/chosen.jquery.min.js',
+				'deps'   => array('jquery')
+			);
+			$scripts[] = array(
+				'handle' => 'email-subscribe',
+				'src'    => ES_DIR_URL.'js/main.js',
+				'deps'   => array('jquery')
+			);
+
+			foreach($scripts as $script) {
+				wp_enqueue_script($script['handle'], $script['src'], $script['deps'], $this->version);
+			}
+
+			// register styles
+			$styles = array(
+				'chosen-css' => ES_DIR_URL.'lib/chosen/chosen.min.css',
+			);
+
+			foreach($styles as $k => $v) {
+				wp_enqueue_style($k, $v, FALSE, $this->version);
+			}
+		}
+
 		/**
 		 *
 		 * Add settings link to plugins page
@@ -150,7 +202,7 @@ if(!class_exists("EmailSubscribe")) :
 		 */
 		public function plugin_action_links($links, $file) {
 			if($file == plugin_basename(__FILE__)) {
-				$settingslink = '<a href="options-general.php?page='.ES_PLUGIN_SLUG.'-settings" title="'.__('Email Subscribe Settings','email-subscribe').'">'.__('Settings','email-subscribe').'</a>';
+				$settingslink = '<a href="options-general.php?page='.ES_PLUGIN_SLUG.'-settings" title="'.__('Email Subscribe Settings', 'email-subscribe').'">'.__('Settings', 'email-subscribe').'</a>';
 				array_unshift($links, $settingslink);
 			}
 			return $links;
@@ -161,14 +213,14 @@ if(!class_exists("EmailSubscribe")) :
 		 *
 		 */
 		public function options_init() {
-			// load existing options
-			include_once('controllers/options-init.php');
-			$this->options = new es_options($this);
-
 			// load the options framework
 			include_once('lib/mindshare-options-framework/mindshare-options-framework.php');
 			include_once('views/options-page.php');
 
+			// load existing options
+			include_once('controllers/options-init.php');
+			$this->options = get_option(ES_OPTIONS);
+			new es_options($this->options);
 		}
 
 		/**
@@ -192,7 +244,6 @@ if(!class_exists("EmailSubscribe")) :
 			}
 
 			update_user_meta($user_id, 'address', $_POST['address']);
-
 		}
 
 		/**
@@ -230,14 +281,11 @@ if(!class_exists("EmailSubscribe")) :
 			} else {
 				// use the default template
 			}
-
-
-
 			//wp_mail($to, $subject, $message, $headers, $attachments);
 		}
 
 		/**
-		 * Scans the current theme for template files. Based on ES_file_dir_array.
+		 * Scans the current theme for template files. Based on mapi_file_dir_array().
 		 *
 		 * @param null   $dir
 		 * @param string $exts
@@ -246,7 +294,7 @@ if(!class_exists("EmailSubscribe")) :
 		 */
 		public function locate_theme_templates($dir = NULL, $exts = 'php') {
 			if(!isset($dir)) {
-				// wp-content/themes/__active_theme__/email-subscribe
+				// e.g. wp-content/themes/__ACTIVE_THEME__/email-subscribe
 				$dir = trailingslashit(get_template_directory()).ES_PLUGIN_SLUG;
 			}
 			$files = array();
@@ -264,7 +312,16 @@ if(!class_exists("EmailSubscribe")) :
 			closedir($handle);
 			return $files;
 		}
+
+		public function default_taxonomies() {
+			$taxonomies = get_taxonomies();
+			$disabled_taxonomies = array('nav_menu', 'post_format', 'link_category');
+			$taxonomies = array_diff($taxonomies, $disabled_taxonomies);
+			return $taxonomies;
+		}
 	}
 endif;
 
 $email_subscribe = new EmailSubscribe;
+
+
