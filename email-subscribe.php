@@ -33,6 +33,7 @@ Domain Path: /lang
  *
  * ToDo List:
  *
+ * @todo      - rename to subscribe, subscriber, or subscribr
  * @todo      - finish internationalizing
  * @todo      - add email editor(s) to options page
  * @todo      - add html/plain text options
@@ -44,6 +45,8 @@ Domain Path: /lang
  * @todo      - add integration with MailChimp/Mandrill
  * @todo      - add integration with Constant Contact
  * @todo      - add CSV subscriber export
+ * @todo      - SMS text messages
+ * @todo      - notification on site (like Facebook)
  * @todo      - add subscriber management to settings
  * @todo      - add integration with 3rd-party SMTP servers and/or advanced SMTP settings
  *
@@ -110,7 +113,7 @@ if(!class_exists("EmailSubscribe")) :
 		private $version = '0.1';
 
 		/**
-		 * @var        $options - holds all plugin options
+		 * @var $options - holds all plugin options
 		 */
 		protected $options;
 
@@ -130,19 +133,15 @@ if(!class_exists("EmailSubscribe")) :
 			add_filter('plugin_action_links', array($this, 'plugin_action_links'), 10, 2);
 
 			// action to send emails
-			//add_action('wp_insert_post', array($this, 'user_query'));
-
-			// actions to add fields to the user profile, register form and edit profile
-			add_action('show_user_profile', array($this, 'user_profile_fields'));
-			add_action('edit_user_profile', array($this, 'user_profile_fields'));
-			add_action('register_form', array($this, 'user_profile_fields'));
-
-			// actions to store updated preferences in the user meta table
-			add_action('personal_options_update', array($this, 'update_user_meta'));
-			add_action('edit_user_profile_update', array($this, 'update_user_meta'));
+			add_action('wp_insert_post', array($this, 'user_query'));
 
 			// setup the options page
 			add_action('init', array($this, 'options_init'));
+
+//			echo '<pre>'; var_dump($this->get_option('show_on_profile')); echo '</pre>'; die;
+			
+
+			//$this->notification_send(2); debugging
 		}
 
 		/**
@@ -162,6 +161,9 @@ if(!class_exists("EmailSubscribe")) :
 			load_plugin_textdomain('email-subscribe', FALSE, ES_PLUGIN_SLUG);
 		}
 
+		/**
+		 *
+		 */
 		public function print_scripts() {
 
 			// register scripts
@@ -183,7 +185,7 @@ if(!class_exists("EmailSubscribe")) :
 
 			// register styles
 			$styles = array(
-				'chosen-css' => ES_DIR_URL.'lib/chosen/chosen.min.css',
+				'email-subscribe-css' => ES_DIR_URL.'css/email-subscribe.min.css',
 			);
 
 			foreach($styles as $k => $v) {
@@ -239,11 +241,44 @@ if(!class_exists("EmailSubscribe")) :
 		 */
 		public function update_user_meta($user_id) {
 
-			if(!current_user_can('edit_user', $user_id)) {
+			if(!(current_user_can('edit_user', $user_id) || $_POST["wp-submit"] == "Register")) { // @todo add nonce?
 				return FALSE;
 			}
 
-			update_user_meta($user_id, 'address', $_POST['address']);
+			if(array_key_exists('subscribed-terms', $_POST)) {
+				$subscribed_terms = array();
+
+				// delete any invalid terms the user may have typed in manually
+				foreach($_POST['subscribed-terms'] as $term) {
+					$term_result = term_exists($term);
+					if($term_result !== 0 && $term_result !== NULL) {
+						$subscribed_terms[] = $term;
+					}
+				}
+			} else {
+				// no terms were selected
+				$subscribed_terms = FALSE;
+			}
+
+			if(array_key_exists('email-subscribe-pause', $_POST) && $_POST['email-subscribe-pause'] == 1) {
+				// the user is pausing
+				$email_subscribe_pause = 1;
+			} else {
+				$email_subscribe_pause = 0;
+			}
+
+			if(array_key_exists('unsubscribe-all', $_POST) && $_POST['unsubscribe-all'] == 1) {
+				// the user is unsubscribing
+				$unsubscribe_all = 1;
+				$subscribed_terms = FALSE; // remove existing subscriptions
+				$email_subscribe_pause = 0;
+			} else {
+				$unsubscribe_all = 0;
+			}
+
+			update_user_meta($user_id, 'subscribed-terms', $subscribed_terms);
+			update_user_meta($user_id, 'email-subscribe-pause', $email_subscribe_pause);
+			update_user_meta($user_id, 'unsubscribe-all', $unsubscribe_all);
 		}
 
 		/**
@@ -297,27 +332,108 @@ if(!class_exists("EmailSubscribe")) :
 				// e.g. wp-content/themes/__ACTIVE_THEME__/email-subscribe
 				$dir = trailingslashit(get_template_directory()).ES_PLUGIN_SLUG;
 			}
-			$files = array();
-			$i = -1;
-			$handle = opendir($dir);
-			$exts = explode(',', strtolower($exts));
-			while(FALSE !== ($file = readdir($handle))) {
-				foreach($exts as $ext) {
-					if(preg_match('/\.'.$ext.'$/i', $file, $test)) {
-						$files[] = str_replace($_SERVER['DOCUMENT_ROOT'], '', $dir.$file);
-						++$i;
+
+			if(file_exists($dir)) {
+				$files = array();
+				$i = -1;
+				$handle = opendir($dir);
+				$exts = explode(',', strtolower($exts));
+				while(FALSE !== ($file = readdir($handle))) {
+					foreach($exts as $ext) {
+						if(preg_match('/\.'.$ext.'$/i', $file, $test)) {
+							$files[] = str_replace($_SERVER['DOCUMENT_ROOT'], '', $dir.$file);
+							++$i;
+						}
 					}
 				}
+				closedir($handle);
+				return $files;
+			} else {
+				return FALSE; // template folder was not found
 			}
-			closedir($handle);
-			return $files;
 		}
 
-		public function default_taxonomies() {
+		/**
+		 * Determine what taxonomies are enabled for email subscription, if any.
+		 *
+		 */
+		public function get_enabled_taxonomies() {
+
+			$enabled_terms = $this->get_option('enabled_terms');
+			$all_taxonomies = $this->get_default_taxonomies();
+
+			if($this->get_option('enable_all_terms')) {
+				// return all available taxonomies
+				return $all_taxonomies;
+			} elseif($enabled_terms) {
+				$enabled_taxonomies = array();
+
+				// this bit gets nasty because, surprisingly, there is no
+				// WP function to lookup a taxonomy from just a `term_id`
+				// all WP term related functions have `taxonomy` as a required param
+				// in this case we don't know the taxonomy so we have to look it up
+
+				// loop through user enabled terms
+				foreach($enabled_terms as $term) {
+
+					// loop through all taxonomies
+					foreach($all_taxonomies as $tax) {
+
+						// check if the term exists in each taxonomy
+						$term_result = term_exists($term, $tax);
+						if(!empty($term_result) && !is_a($term_result, 'WP_Error')) {
+
+							// if so, add it to our array
+							$term_meta = get_term($term_result['term_id'], $tax, ARRAY_A);
+							$enabled_taxonomies[] = $term_meta['taxonomy'];
+						}
+					}
+				}
+
+				$enabled_taxonomies = array_unique($enabled_taxonomies);
+
+				// return all user enabled taxonomies
+				return $enabled_taxonomies;
+			} else {
+				// no terms are enabled, exit now
+				return FALSE;
+			}
+		}
+
+		/**
+		 * @return array
+		 */
+		public function get_default_taxonomies() {
 			$taxonomies = get_taxonomies();
 			$disabled_taxonomies = array('nav_menu', 'post_format', 'link_category');
 			$taxonomies = array_diff($taxonomies, $disabled_taxonomies);
 			return $taxonomies;
+		}
+
+		/**
+		 *
+		 * Retrieve an option from the options array.
+		 *
+		 * @param null $name
+		 *
+		 * @return string
+		 */
+		public function get_option($name = NULL) {
+			if(empty($name)) {
+				return FALSE;
+			}
+
+			if($this->options && array_key_exists($name, $this->options)) {
+
+				// check if the option is a URL
+				if(stristr($name, 'uri')) {
+					return html_entity_decode($this->options[$name]);
+				} else {
+					return $this->options[$name];
+				}
+			} else {
+				return FALSE;
+			}
 		}
 	}
 endif;

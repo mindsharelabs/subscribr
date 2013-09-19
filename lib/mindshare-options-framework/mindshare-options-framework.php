@@ -1,12 +1,10 @@
 <?php
 /**
- * mindshare_options_framework
+ * The Mindshare Options Framework is a flexible, lightweight framework for creating WordPress theme and plugin options screens.
  *
- * The mindshare_options_framework is a flexible, lightweight framework for creating WordPress theme and plugin options screens.
- *
- * @version        0.3.3
+ * @version        0.3.4
  * @author         Mindshare Studios, Inc.
- * @copyright      Copyright (c) 2012
+ * @copyright      Copyright (c) 2013
  * @link           http://www.mindsharelabs.com/documentation/
  *
  * @credits        Forked from: Admin Page Class 0.9.9 by Ohad Raz http://bainternet.info
@@ -23,6 +21,7 @@
  *
  * Changelog:
  *
+ * 0.3.4 - some refactoring, styling for checkbox lists
  * 0.3.3 - updated codemirror
  * 0.3.2 - fixed issue with code fields. css updates
  * 0.3.1 - fixed htmlspecialchars/stripslashes issue with text fields
@@ -32,6 +31,10 @@
  * 0.1 - first release
  *
  *
+ * @todo           split fields into separate classes, reduce code repetition
+ * @todo           split JS blocks into separate files
+ * @todo           add more filters and actions
+ * @todo           make cases and naming consistent
  * @todo           Better Typography field. Figure tou a way to dynamically get font weights from Google, etc. Add option to turn off color picker.
  * @todo           ADD custom PHP field
  * @todo           change case of vars to match mindshare standard
@@ -39,6 +42,13 @@
  */
 if(!class_exists('mindshare_options_framework')) :
 	class mindshare_options_framework {
+
+		/**
+		 * The MOF version number.
+		 *
+		 * @var string
+		 */
+		private $version = '0.3.4';
 
 		/**
 		 * Contains all saved data for a page
@@ -418,8 +428,8 @@ if(!class_exists('mindshare_options_framework')) :
 					'multiple_queues'     => TRUE,
 					'max_file_size'       => wp_max_upload_size().'b',
 					'url'                 => admin_url('admin-ajax.php'),
-					'flash_swf_url'       => includes_url('js/plupload/plupload.flash.swf'),
-					'silverlight_xap_url' => includes_url('js/plupload/plupload.silverlight.xap'),
+					'flash_swf_url'       => includes_url('lib/plupload/plupload.flash.swf'),
+					'silverlight_xap_url' => includes_url('lib/plupload/plupload.silverlight.xap'),
 					'filters'             => array(array('title' => __('Allowed Files'), 'extensions' => '*')),
 					'multipart'           => TRUE,
 					'urlstream_upload'    => TRUE,
@@ -860,7 +870,7 @@ if(!class_exists('mindshare_options_framework')) :
 		}
 
 		/**
-		 * Does the repetive tasks of adding a field
+		 * Does the repetitive tasks of adding a field
 		 *
 		 * @param $args     (mixed|array) contains everything needed to build the field
 		 *
@@ -992,11 +1002,11 @@ if(!class_exists('mindshare_options_framework')) :
 			}
 
 			wp_enqueue_style('Admin_Page_Class', $this->SelfPath.'/css/mindshare-options.css');
-			wp_enqueue_style('iphone_checkbox', $this->SelfPath.'/js/iphone-style-checkboxes/style.css');
+			wp_enqueue_style('iphone_checkbox', $this->SelfPath.'/lib/iphone-style-checkboxes/style.css');
 			wp_enqueue_script('utils');
 			wp_enqueue_script('json2');
 			wp_enqueue_script('Admin_Page_Class', $this->SelfPath.'/js/mindshare-options-framework.js', array('jquery'), NULL, TRUE);
-			wp_enqueue_script('iphone_checkbox', $this->SelfPath.'/js/iphone-style-checkboxes/iphone-style-checkboxes.js', array('jquery'), NULL, TRUE);
+			wp_enqueue_script('iphone_checkbox', $this->SelfPath.'/lib/iphone-style-checkboxes/iphone-style-checkboxes.js', array('jquery'), NULL, TRUE);
 			wp_enqueue_script('jquery-ui-sortable');
 		}
 
@@ -1010,15 +1020,15 @@ if(!class_exists('mindshare_options_framework')) :
 			//var_dump($this->has_field('code')); die('call');
 			if($this->has_field('code')) {
 				// Enqueue codemirror js and css
-				wp_enqueue_style('at-code-css', $this->SelfPath.'/js/codemirror/codemirror.css', array(), NULL);
-				//wp_enqueue_style('at-code-css-dark', $this->SelfPath.'/js/codemirror/solarizedDark.css', array(), NULL);
-				//wp_enqueue_style('at-code-css-light', $this->SelfPath.'/js/codemirror/solarizedLight.css', array(), NULL);
-				wp_enqueue_script('at-code-js', $this->SelfPath.'/js/codemirror/codemirror.js', array('jquery'), FALSE, TRUE);
-				wp_enqueue_script('at-code-js-xml', $this->SelfPath.'/js/codemirror/xml.js', array('jquery'), FALSE, TRUE);
-				wp_enqueue_script('at-code-js-javascript', $this->SelfPath.'/js/codemirror/javascript.js', array('jquery'), FALSE, TRUE);
-				wp_enqueue_script('at-code-js-css', $this->SelfPath.'/js/codemirror/css.js', array('jquery'), FALSE, TRUE);
-				wp_enqueue_script('at-code-js-clike', $this->SelfPath.'/js/codemirror/clike.js', array('jquery'), FALSE, TRUE);
-				wp_enqueue_script('at-code-js-php', $this->SelfPath.'/js/codemirror/php.js', array('jquery'), FALSE, TRUE);
+				wp_enqueue_style('at-code-css', $this->SelfPath.'/lib/codemirror/codemirror.css', array(), NULL);
+				//wp_enqueue_style('at-code-css-dark', $this->SelfPath.'/lib/codemirror/solarizedDark.css', array(), NULL);
+				//wp_enqueue_style('at-code-css-light', $this->SelfPath.'/lib/codemirror/solarizedLight.css', array(), NULL);
+				wp_enqueue_script('at-code-lib', $this->SelfPath.'/lib/codemirror/codemirror.js', array('jquery'), FALSE, TRUE);
+				wp_enqueue_script('at-code-lib-xml', $this->SelfPath.'/lib/codemirror/xml.js', array('jquery'), FALSE, TRUE);
+				wp_enqueue_script('at-code-lib-javascript', $this->SelfPath.'/lib/codemirror/javascript.js', array('jquery'), FALSE, TRUE);
+				wp_enqueue_script('at-code-lib-css', $this->SelfPath.'/lib/codemirror/css.js', array('jquery'), FALSE, TRUE);
+				wp_enqueue_script('at-code-lib-clike', $this->SelfPath.'/lib/codemirror/clike.js', array('jquery'), FALSE, TRUE);
+				wp_enqueue_script('at-code-lib-php', $this->SelfPath.'/lib/codemirror/php.js', array('jquery'), FALSE, TRUE);
 			}
 		}
 
@@ -1032,9 +1042,9 @@ if(!class_exists('mindshare_options_framework')) :
 			if($this->has_field('plupload')) {
 
 				wp_enqueue_script('plupload-all');
-				wp_register_script('myplupload', $this->SelfPath.'/js/plupload/myplupload.js', array('jquery'));
+				wp_register_script('myplupload', $this->SelfPath.'/lib/plupload/myplupload.js', array('jquery'));
 				wp_enqueue_script('myplupload');
-				wp_register_style('myplupload', $this->SelfPath.'/js/plupload/myplupload.css');
+				wp_register_style('myplupload', $this->SelfPath.'/lib/plupload/myplupload.css');
 				wp_enqueue_style('myplupload');
 			}
 		}
@@ -1107,7 +1117,7 @@ if(!class_exists('mindshare_options_framework')) :
 				$li = "<li id='item_{$attachment_id}'>";
 				$li .= "<img src='{$attachment['url']}' alt='image_{$attachment_id}' />";
 
-				/** @noinspection PhpUndefinedVariableInspection */
+				
 				$li .= "<a title='".__('Delete this image')."' class='at-delete-file' href='#' rel='{$nonce}|{$post_id}|{$id}|{$attachment_id}'><img src='".$this->SelfPath."/img/delete-16.png' alt='".__('Delete')."' /></a>";
 				$li .= "<input type='hidden' name='{$id}[]' value='{$attachment_id}' />";
 				$li .= "</li>";
@@ -1124,11 +1134,13 @@ if(!class_exists('mindshare_options_framework')) :
 		 */
 		public function delete_attachments($post_id) {
 			// Get Attachments
-			$attachments = get_posts(array(
-										  'numberposts' => -1,
-										  'post_type'   => 'attachment',
-										  'post_parent' => $post_id
-									 ));
+			$attachments = get_posts(
+				array(
+					 'numberposts' => -1,
+					 'post_type'   => 'attachment',
+					 'post_parent' => $post_id
+				)
+			);
 			// Loop through attachments, if not empty, delete it.
 			if(!empty($attachments)) {
 				foreach($attachments as $att) {
@@ -1242,7 +1254,7 @@ if(!class_exists('mindshare_options_framework')) :
 				// Enqueue JQuery UI, use proper version.
 				wp_enqueue_style('at-jquery-ui-css', 'http://ajax.googleapis.com/ajax/libs/jqueryui/'.$this->get_jqueryui_ver().'/themes/base/jquery-ui.css');
 				wp_enqueue_script('at-jquery-ui', 'https://ajax.googleapis.com/ajax/libs/jqueryui/'.$this->get_jqueryui_ver().'/jquery-ui.min.js', array('jquery'));
-				wp_enqueue_script('at-timepicker', $this->SelfPath.'/js/time-and-date/jquery-ui-timepicker-addon.js', array('jquery'), NULL, TRUE);
+				wp_enqueue_script('at-timepicker', $this->SelfPath.'/lib/time-and-date/jquery-ui-timepicker-addon.js', array('jquery'), NULL, TRUE);
 			}
 		}
 
@@ -1380,7 +1392,7 @@ if(!class_exists('mindshare_options_framework')) :
 			$js_code = ob_get_clean();
 			$js_code = str_replace("'", "\"", $js_code);
 			$js_code = str_replace("CurrentCounter", "' + ".$counter." + '", $js_code);
-			echo '<script>
+			echo '<script type="text/javascript">
         jQuery(document).ready(function() {
           var '.$counter.' = '.$c.';
           jQuery("#add-'.$jsid.'").live(\'click\', function() {
@@ -2023,7 +2035,7 @@ if(!class_exists('mindshare_options_framework')) :
 			// checkbox_list
 			if('checkbox_list' == $options['type']) {
 				foreach($terms as $term) {
-					echo "<input type='checkbox' name='{$field['id']}[]' value='$term->slug'".checked(in_array($term->slug, $meta), TRUE, FALSE)." /> $term->name  ";
+					echo "<input type='checkbox' name='{$field['id']}[]' value='$term->slug'".checked(in_array($term->slug, $meta), TRUE, FALSE)." /> $term->name  <br />";
 				}
 			} // select
 			else {
@@ -3900,15 +3912,18 @@ if(!class_exists('mindshare_options_framework')) :
 			}
 		}
 
-		function Handle_plupload_action() {
+		public function Handle_plupload_action() {
 			// check ajax nonce
 			$imgid = $_POST["imgid"];
 			check_ajax_referer($imgid.'pluploadan');
 			// handle file upload
-			$status = wp_handle_upload($_FILES[$imgid.'async-upload'], array(
-																			'test_form' => TRUE,
-																			'action'    => 'plupload_action'
-																	   ));
+			$status = wp_handle_upload(
+				$_FILES[$imgid.'async-upload'],
+				array(
+					 'test_form' => TRUE,
+					 'action'    => 'plupload_action'
+				)
+			);
 			// send the uploaded file url in response
 			echo $status['url'];
 			exit;
@@ -3980,7 +3995,7 @@ if(!class_exists('mindshare_options_framework')) :
 			$debug = debug_backtrace();
 
 			$str = '';
-			/** @noinspection PhpUndefinedVariableInspection */
+			
 			if($echo) {
 				$str .= '<div id="message" class="error"><p><strong>';
 			}
@@ -3988,14 +4003,14 @@ if(!class_exists('mindshare_options_framework')) :
 			if($echo) {
 				$str .= '</strong>';
 			}
-			/** @noinspection PhpUndefinedVariableInspection */
+			
 			$str .= ": ".$msg." in ".$debug[1]["file"]." on line ".$debug[1]["line"];
 			if($echo) {
 				$str .= '</p></div>';
 			}
 
 			if($echo) {
-				/** @noinspection PhpUndefinedVariableInspection */
+				
 				if($die) {
 					die($str);
 				} else {
@@ -4008,12 +4023,13 @@ if(!class_exists('mindshare_options_framework')) :
 			}
 		}
 
+		/**
+		 * Returns the class name and version.
+		 *
+		 * @return string
+		 */
 		public function __toString() {
-			if($this->project_name == 'this') {
-				return __CLASS__;
-			} else {
-				return $this->project_name.'->'.__CLASS__;
-			}
+			return get_class($this).' '.$this->version;
 		}
 	}
 endif;

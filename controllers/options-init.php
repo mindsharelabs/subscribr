@@ -10,7 +10,7 @@
  */
 
 if(!class_exists('es_options')) :
-	class es_options {
+	class es_options extends EmailSubscribe {
 
 		/**
 		 * @var        $options - holds all plugin options
@@ -26,6 +26,7 @@ if(!class_exists('es_options')) :
 				$this->options = array();
 			}
 			$this->set_options();
+			$this->apply_options();
 		}
 
 		/**
@@ -62,11 +63,37 @@ if(!class_exists('es_options')) :
 		}
 
 		/**
+		 * Setup default options
+		 *
+		 * Technically this is done by the Mindshare Options Framework, but we want to
+		 * make sure we have the correct defaults even if a user never visits the settings
+		 * page.
+		 */
+		public function apply_options() {
+
+			if($this->get_option('show_on_profile')) {
+				// actions to add fields to the user profile, register form and edit profile
+				add_action('show_user_profile', array($this, 'user_profile_fields'));
+				add_action('edit_user_profile', array($this, 'user_profile_fields'));
+				// actions to store updated preferences in the user meta table
+				add_action('personal_options_update', array($this, 'update_user_meta'));
+				add_action('edit_user_profile_update', array($this, 'update_user_meta'));
+			}
+
+			if($this->get_option('show_on_register')) {
+				add_action('register_form', array($this, 'user_profile_fields'));
+				add_action('user_register', array($this, 'update_user_meta'));
+			}
+		}
+
+		/**
 		 * Saves the options to the DB
 		 *
 		 */
 		public function save_options() {
 			update_option(ES_OPTIONS, $this->options);
 		}
+
+
 	}
 endif;

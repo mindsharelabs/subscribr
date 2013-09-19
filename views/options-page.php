@@ -26,8 +26,9 @@ $es_options = new mindshare_options_framework(
 $es_options_labels = array(
 	'Email Options',
 	'Taxonomy Options',
-	'Mail Scheduling',
-	'Third Party Integration'
+	'General Options',
+	//'Mail Scheduling',
+	//'Third Party Integration'
 );
 // filter allows plugins to add new tabs
 $es_options_labels = array_merge($es_options_labels, apply_filters('es_option_title', array()));
@@ -84,22 +85,20 @@ $es_options->addCheckbox(
 	'enable_all_terms',
 	array(
 		 'name' => __('Enable All Terms', 'email-subscribe'),
-		 'desc' => __('Turning this on will override any taxonomy terms enabled below.', 'email-subscribe')
+		 'desc' => __('Turning this ON will enable all taxonomy terms, overriding the individual settings below.', 'email-subscribe')
 	)
 );
 
 // term choices @todo add select all/none toggle to Mindshare Options Framework
-
-$taxonomies = $this->default_taxonomies();
 $es_options->addTaxonomy(
 	'enabled_terms',
 	array(
-		 'taxonomy' => $taxonomies,
+		 'taxonomy' => $this->get_default_taxonomies(),
 		 'type'     => 'checkbox_list',
 	),
 	array(
 		 'name' => __('Enabled Terms', 'email-subscribe'),
-		 'desc' => __('Choose the terms you want to allow users to subscribe from their profiles.', 'email-subscribe')
+		 'desc' => __('Choose the terms you want to allow users to subscribe to from their profiles.', 'email-subscribe')
 	),
 	FALSE
 );
@@ -113,8 +112,19 @@ $es_options->CloseTab();
 $es_options->OpenTab($es_tabs_keys[2]);
 $es_options->Title($es_tabs[$es_tabs_keys[2]]);
 
-$es_options->addParagraph(
-	'Feature not yet implemented.'
+$es_options->addCheckbox(
+	'show_on_profile',
+	array(
+		 'name' => __('Show subscription options on user profile', 'email-subscribe'),
+		 'std'  => TRUE,
+	)
+);
+$es_options->addCheckbox(
+	'show_on_register',
+	array(
+		 'name' => __('Show subscription options on registration screen', 'email-subscribe'),
+		 'std'  => FALSE,
+	)
 );
 
 $es_options->CloseTab();
@@ -122,7 +132,7 @@ $es_options->CloseTab();
 /*
  * tab start
  */
-
+/*
 $es_options->OpenTab($es_tabs_keys[3]);
 $es_options->Title($es_tabs[$es_tabs_keys[3]]);
 
@@ -130,7 +140,7 @@ $es_options->addParagraph(
 	'Feature not yet implemented.'
 );
 
-$es_options->CloseTab();
+$es_options->CloseTab();*/
 
 // action to allow plugging in extra options
 do_action('es_option_add', $es_options);

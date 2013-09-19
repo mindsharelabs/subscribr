@@ -7,8 +7,7 @@ jQuery(document).ready(function() {
 function emailSubscribeInit() {
 	jQuery('.chosen-select').chosen({
 		search_contains: true,
-		width: '500px',
-		height: '150px',
+		width: '100%',
 		placeholder_text_multiple: 'Select Email Subscriptions',
 		no_results_text: 'No results'
 	});
