@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Email Subscribe
+Plugin Name: Subscribr
 Plugin URI: http://mindsharelabs.com/products/
 Description: Allows WordPress users to subscribe to email notifications for new posts, pages, and custom types, filterable by taxonomies.
 Version: 0.1
@@ -8,7 +8,7 @@ Author: Mindshare Studios, Inc.
 Author URI: http://mind.sh/are/
 License: GNU General Public License
 License URI: LICENSE
-Text Domain: email-subscribe
+Text Domain: subscribr
 Domain Path: /lang
 */
 
@@ -33,7 +33,6 @@ Domain Path: /lang
  *
  * ToDo List:
  *
- * @todo      - rename to subscribr
  * @todo      - finish internationalizing
  * @todo      - add merge fields
  * @todo      - add email editor(s) to options page
@@ -67,12 +66,12 @@ if(!defined('ES_MIN_WP_VERSION')) {
 	define('ES_MIN_WP_VERSION', '3.5');
 }
 
-if(!defined('ES_PLUGIN_NAME')) {
-	define('ES_PLUGIN_NAME', 'Email Subscribe');
+if(!defined('SUBSCRIBR_PLUGIN_NAME')) {
+	define('SUBSCRIBR_PLUGIN_NAME', 'Subscribr');
 }
 
-if(!defined('ES_PLUGIN_SLUG')) {
-	define('ES_PLUGIN_SLUG', dirname(plugin_basename(__FILE__))); // email-subscribe
+if(!defined('SUBSCRIBR_PLUGIN_SLUG')) {
+	define('SUBSCRIBR_PLUGIN_SLUG', dirname(plugin_basename(__FILE__))); // subscribr
 }
 
 if(!defined('ES_DIR_PATH')) {
@@ -83,14 +82,14 @@ if(!defined('ES_DIR_URL')) {
 	define('ES_DIR_URL', trailingslashit(plugins_url(NULL, __FILE__)));
 }
 
-if(!defined('ES_OPTIONS')) {
-	define('ES_OPTIONS', 'email_subscribe_options');
+if(!defined('SUBSCRIBR_OPTIONS')) {
+	define('SUBSCRIBR_OPTIONS', 'subscribr_options');
 }
 
 // check WordPress version
 global $wp_version;
 if(version_compare($wp_version, ES_MIN_WP_VERSION, "<")) {
-	exit(ES_PLUGIN_NAME.' requires WordPress '.ES_MIN_WP_VERSION.' or newer.');
+	exit(SUBSCRIBR_PLUGIN_NAME.' requires WordPress '.ES_MIN_WP_VERSION.' or newer.');
 }
 
 // deny direct access
@@ -100,12 +99,12 @@ if(!function_exists('add_action')) {
 	exit();
 }
 
-if(!class_exists("EmailSubscribe")) :
+if(!class_exists("Subscribr")) :
 
 	/**
-	 * Class EmailSubscribe
+	 * Class Subscribr
 	 */
-	class EmailSubscribe {
+	class Subscribr {
 
 		/**
 		 * The plugin version number.
@@ -156,7 +155,7 @@ if(!class_exists("EmailSubscribe")) :
 		 *
 		 */
 		public function load_textdomain() {
-			load_plugin_textdomain('email-subscribe', FALSE, ES_PLUGIN_SLUG);
+			load_plugin_textdomain('subscribr', FALSE, SUBSCRIBR_PLUGIN_SLUG);
 		}
 
 		/**
@@ -178,7 +177,7 @@ if(!class_exists("EmailSubscribe")) :
 				);
 
 				$scripts[] = array(
-					'handle' => 'email-subscribe',
+					'handle' => 'subscribr',
 					'src'    => ES_DIR_URL.'js/main.js',
 					'deps'   => array('jquery')
 				);
@@ -189,7 +188,7 @@ if(!class_exists("EmailSubscribe")) :
 
 				// register styles
 				$styles = array(
-					'email-subscribe-css' => ES_DIR_URL.'css/email-subscribe.min.css',
+					'subscribr-css' => ES_DIR_URL.'css/subscribr.min.css',
 				);
 
 				foreach($styles as $k => $v) {
@@ -209,7 +208,7 @@ if(!class_exists("EmailSubscribe")) :
 		 */
 		public function plugin_action_links($links, $file) {
 			if($file == plugin_basename(__FILE__)) {
-				$settingslink = '<a href="options-general.php?page='.ES_PLUGIN_SLUG.'-settings" title="'.__('Email Subscribe Settings', 'email-subscribe').'">'.__('Settings', 'email-subscribe').'</a>';
+				$settingslink = '<a href="options-general.php?page='.SUBSCRIBR_PLUGIN_SLUG.'-settings" title="'.__('Email Subscribe Settings', 'subscribr').'">'.__('Settings', 'subscribr').'</a>';
 				array_unshift($links, $settingslink);
 			}
 			return $links;
@@ -226,8 +225,8 @@ if(!class_exists("EmailSubscribe")) :
 
 			// load existing options
 			include_once('controllers/options-init.php');
-			$this->options = get_option(ES_OPTIONS);
-			new es_options($this->options);
+			$this->options = get_option(SUBSCRIBR_OPTIONS);
+			new subscribr_options($this->options);
 		}
 
 		/**
@@ -265,24 +264,24 @@ if(!class_exists("EmailSubscribe")) :
 				$subscribed_terms = FALSE;
 			}
 
-			if(array_key_exists('email-subscribe-pause', $_POST) && $_POST['email-subscribe-pause'] == 1) {
+			if(array_key_exists('subscribr-pause', $_POST) && $_POST['subscribr-pause'] == 1) {
 				// the user is pausing
-				$email_subscribe_pause = 1;
+				$subscribr_pause = 1;
 			} else {
-				$email_subscribe_pause = 0;
+				$subscribr_pause = 0;
 			}
 
 			if(array_key_exists('unsubscribe-all', $_POST) && $_POST['unsubscribe-all'] == 1) {
 				// the user is unsubscribing
 				$unsubscribe_all = 1;
 				$subscribed_terms = FALSE; // remove existing subscriptions
-				$email_subscribe_pause = 0;
+				$subscribr_pause = 0;
 			} else {
 				$unsubscribe_all = 0;
 			}
 
 			update_user_meta($user_id, 'subscribed-terms', $subscribed_terms);
-			update_user_meta($user_id, 'email-subscribe-pause', $email_subscribe_pause);
+			update_user_meta($user_id, 'subscribr-pause', $subscribr_pause);
 			update_user_meta($user_id, 'unsubscribe-all', $unsubscribe_all);
 		}
 
@@ -314,7 +313,7 @@ if(!class_exists("EmailSubscribe")) :
 
 			$template_files = $this->locate_theme_templates();
 
-			// test for user defined PHP email templates in the 'email-subscribe' folder in the current theme (or child theme)
+			// test for user defined PHP email templates in the 'subscribr' folder in the current theme (or child theme)
 			if(locate_template($template_files)) {
 				// a template was found, so we'll try to use it
 
@@ -334,8 +333,8 @@ if(!class_exists("EmailSubscribe")) :
 		 */
 		public function locate_theme_templates($dir = NULL, $exts = 'php') {
 			if(!isset($dir)) {
-				// e.g. wp-content/themes/__ACTIVE_THEME__/email-subscribe
-				$dir = trailingslashit(get_template_directory()).ES_PLUGIN_SLUG;
+				// e.g. wp-content/themes/__ACTIVE_THEME__/subscribr
+				$dir = trailingslashit(get_template_directory()).SUBSCRIBR_PLUGIN_SLUG;
 			}
 
 			if(file_exists($dir)) {
@@ -451,6 +450,6 @@ if(!class_exists("EmailSubscribe")) :
 	}
 endif;
 
-$email_subscribe = new EmailSubscribe;
+$subscribr = new Subscribr;
 
 
