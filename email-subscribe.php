@@ -36,9 +36,10 @@ Domain Path: /lang
  * @todo      - rename to subscribe, subscriber, or subscribr
  * @todo      - finish internationalizing
  * @todo      - add email editor(s) to options page
+ * @todo      - add merge fields
  * @todo      - add html/plain text options
  * @todo      - add scheduling options / digest mode
- * @todo      - add default email template file (or several)
+ * @todo      - add default email template file
  *
  * Premium features:
  *
