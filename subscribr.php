@@ -336,23 +336,24 @@ if(!class_exists("Subscribr")) :
 		 * @param $post_id
 		 */
 		public function user_query($post_id) {
-			
+
 			if(!wp_is_post_revision($post_id)) {
 
-				echo '<pre>'; var_dump(get_post($post_id)); echo '</pre>'; die;
+				$post = get_post($post_id);
 
+				// quit if post has been published already
+				if($post->post_date != $post->post_modified) {
+					return;
+				}
 
-				do_action('subscribr_pre_user_query');
+				do_action('subscribr_pre_user_query', $post); // likely the best spot to plugin other types of notifications (SMS, etc)
 
 				// email notifications
 				if($this->get_option('enabled_email_notifications')) {
 
-					if($_POST['post_type'] == "post" && $_POST['post_status'] == "publish") { // modify this to set the post type, or remove to allow all post types
-						$post = get_post($post_id);
-						// quit if post has been published already
-						if($post->post_date != $post->post_modified) {
-							return;
-						}
+					// test for public post statuses, this allows for custom statuses as well as the default 'publish'
+					$post_status = get_post_status_object(get_post_status($post_id));
+					if($post_status->public) {
 						$this->notification_send($post_id);
 						return;
 					}
