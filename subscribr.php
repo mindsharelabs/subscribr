@@ -39,6 +39,7 @@ Domain Path: /lang
  * @todo      - add default email template file
  * @todo      - add html/plain text options
  * @todo      - add scheduling options / digest mode
+ * @todo      - add analytics options... talk to Bryce about this
  *
  * Premium features:
  *
@@ -62,8 +63,8 @@ Domain Path: /lang
  *
  */
 
-if(!defined('ES_MIN_WP_VERSION')) {
-	define('ES_MIN_WP_VERSION', '3.5');
+if(!defined('SUBSCRIBR_MIN_WP_VERSION')) {
+	define('SUBSCRIBR_MIN_WP_VERSION', '3.5');
 }
 
 if(!defined('SUBSCRIBR_PLUGIN_NAME')) {
@@ -74,12 +75,12 @@ if(!defined('SUBSCRIBR_PLUGIN_SLUG')) {
 	define('SUBSCRIBR_PLUGIN_SLUG', dirname(plugin_basename(__FILE__))); // subscribr
 }
 
-if(!defined('ES_DIR_PATH')) {
-	define('ES_DIR_PATH', plugin_dir_path(__FILE__));
+if(!defined('SUBSCRIBR_DIR_PATH')) {
+	define('SUBSCRIBR_DIR_PATH', plugin_dir_path(__FILE__));
 }
 
-if(!defined('ES_DIR_URL')) {
-	define('ES_DIR_URL', trailingslashit(plugins_url(NULL, __FILE__)));
+if(!defined('SUBSCRIBR_DIR_URL')) {
+	define('SUBSCRIBR_DIR_URL', trailingslashit(plugins_url(NULL, __FILE__)));
 }
 
 if(!defined('SUBSCRIBR_OPTIONS')) {
@@ -88,8 +89,8 @@ if(!defined('SUBSCRIBR_OPTIONS')) {
 
 // check WordPress version
 global $wp_version;
-if(version_compare($wp_version, ES_MIN_WP_VERSION, "<")) {
-	exit(SUBSCRIBR_PLUGIN_NAME.' requires WordPress '.ES_MIN_WP_VERSION.' or newer.');
+if(version_compare($wp_version, SUBSCRIBR_MIN_WP_VERSION, "<")) {
+	exit(SUBSCRIBR_PLUGIN_NAME.' requires WordPress '.SUBSCRIBR_MIN_WP_VERSION.' or newer.');
 }
 
 // deny direct access
@@ -172,13 +173,13 @@ if(!class_exists("Subscribr")) :
 
 				$scripts[] = array(
 					'handle' => 'chosen-js',
-					'src'    => ES_DIR_URL.'lib/chosen/chosen.jquery.min.js',
+					'src'    => SUBSCRIBR_DIR_URL.'lib/chosen/chosen.jquery.min.js',
 					'deps'   => array('jquery')
 				);
 
 				$scripts[] = array(
 					'handle' => 'subscribr',
-					'src'    => ES_DIR_URL.'js/main.js',
+					'src'    => SUBSCRIBR_DIR_URL.'js/main.js',
 					'deps'   => array('jquery')
 				);
 
@@ -188,7 +189,7 @@ if(!class_exists("Subscribr")) :
 
 				// register styles
 				$styles = array(
-					'subscribr-css' => ES_DIR_URL.'css/subscribr.min.css',
+					'subscribr-css' => SUBSCRIBR_DIR_URL.'css/subscribr.min.css',
 				);
 
 				foreach($styles as $k => $v) {
