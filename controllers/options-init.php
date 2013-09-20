@@ -40,6 +40,18 @@ if(!class_exists('subscribr_options')) :
 
 			$option_changed = FALSE;
 
+			if(!array_key_exists('enable_email_notifications', $this->options)) {
+				$this->options['enable_email_notifications'] = apply_filters('subscribr_default_enable_email_notifications', TRUE);
+				$option_changed = TRUE;
+			}
+			if(!array_key_exists('show_on_profile', $this->options)) {
+				$this->options['show_on_profile'] = apply_filters('subscribr_default_show_on_profile', TRUE);
+				$option_changed = TRUE;
+			}
+			if(!array_key_exists('show_on_register', $this->options)) {
+				$this->options['show_on_register'] = apply_filters('subscribr_default_show_on_register', TRUE);
+				$option_changed = TRUE;
+			}
 			if(!array_key_exists('enable_all_terms', $this->options)) {
 				$this->options['enable_all_terms'] = apply_filters('subscribr_default_enable_all_terms', TRUE);
 				$option_changed = TRUE;
@@ -57,21 +69,28 @@ if(!class_exists('subscribr_options')) :
 				$option_changed = TRUE;
 			}
 
+			if(!array_key_exists('notification_label_plural', $this->options)) {
+				$this->options['notification_label_plural'] = apply_filters('subscribr_notification_label_plural', __('notifications', 'subscribr'));
+				$option_changed = TRUE;
+			}
+
+			if(!array_key_exists('notification_label', $this->options)) {
+				$this->options['notification_label'] = apply_filters('subscribr_notification_label', __('notification', 'subscribr'));
+				$option_changed = TRUE;
+			}
+
 			if($option_changed) {
 				$this->save_options();
 			}
 		}
 
 		/**
-		 * Setup default options
+		 * Apply default options
 		 *
-		 * Technically this is done by the Mindshare Options Framework, but we want to
-		 * make sure we have the correct defaults even if a user never visits the settings
-		 * page.
 		 */
 		public function apply_options() {
 
-			if($this->get_option('show_on_profile')) {
+			if($this->options['show_on_profile']) {
 				// actions to add fields to the user profile, register form and edit profile
 				add_action('show_user_profile', array($this, 'user_profile_fields'));
 				add_action('edit_user_profile', array($this, 'user_profile_fields'));
@@ -80,7 +99,7 @@ if(!class_exists('subscribr_options')) :
 				add_action('edit_user_profile_update', array($this, 'update_user_meta'));
 			}
 
-			if($this->get_option('show_on_register')) {
+			if($this->options['show_on_register']) {
 				add_action('register_form', array($this, 'user_profile_fields'));
 				add_action('user_register', array($this, 'update_user_meta'));
 			}

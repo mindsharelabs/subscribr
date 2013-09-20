@@ -1,6 +1,12 @@
 .login-action-register #login .hidden-on-singup {
-	display:none !important
+	display:none !important;
 }
 .login-action-register #login {
-	width:620px
+	width:620px;
+}
+#subscribr-terms-container {
+	max-width:500px;
+}
+.chosen-container-multi .chosen-choices li.search-field input[type=text] {
+	height:25px;
 }

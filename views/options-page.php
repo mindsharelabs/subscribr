@@ -56,10 +56,11 @@ $subscribr_options->OpenTab($subscribr_tabs_keys[0]);
 $subscribr_options->Title($subscribr_tabs[$subscribr_tabs_keys[0]]);
 
 $subscribr_options->addCheckbox(
-	'enabled_email_subscriptions',
+	'enable_email_notifications',
 	array(
-		 'name' => __('Show subscription options on user profile', 'subscribr'),
+		 'name' => __('Enable Email notifications', 'subscribr'),
 		 'std'  => TRUE,
+		 'desc'  => __('Globally enable or disable email notifications.', 'subscribr'),
 	)
 );
 
@@ -81,14 +82,21 @@ $subscribr_options->addText(
 	)
 );
 
+$subscribr_options->addText(
+	'email_subject_new_post',
+	array(
+		 'name' => __('New Post Email Subject', 'subscribr'),
+		 'std'  => get_bloginfo('name').' '.__($this->get_option('notification_label'), 'subscribr'), // @todo
+		 'desc' => ''
+	)
+);
+
 $subscribr_options->addCode(
-	'email_new_post',
+	'email_body_new_post',
 	array(
 		 'type'   => 'code',
-		 'id'     => $id,
-		 'std'    => '',
-		 'desc'   => '',
-		 'style'  => '',
+		 'std'    => 'Feature not yet implemented', //@todo
+		 'desc'   => __('This email template will be used for email notifications when new posts are published', 'subscribr'),
 		 'name'   => 'New Post Email Template',
 		 'syntax' => 'html',
 
@@ -138,15 +146,34 @@ $subscribr_options->Title($subscribr_tabs[$subscribr_tabs_keys[2]]);
 $subscribr_options->addCheckbox(
 	'show_on_profile',
 	array(
-		 'name' => __('Show subscription options on user profile', 'subscribr'),
+		 'name' => __('Show notification options on user profile', 'subscribr'),
 		 'std'  => TRUE,
 	)
 );
 $subscribr_options->addCheckbox(
 	'show_on_register',
 	array(
-		 'name' => __('Show subscription options on registration screen', 'subscribr'),
+		 'name' => __('Show notification options on registration screen', 'subscribr'),
 		 'std'  => FALSE,
+	)
+);
+
+
+$subscribr_options->addText(
+	'notification_label',
+	array(
+		 'name' => __('Notification Label', 'subscribr'),
+		 'std'  => __('notification', 'subscribr'),
+		 'desc' => __('Enter the terminology to use for singular "notifications". E.g. "alert", "subscription", "notification", etc.', 'subscribr')
+	)
+);
+
+$subscribr_options->addText(
+	'notification_label_plural',
+	array(
+		 'name' => __('Notification Label Plural', 'subscribr'),
+		 'std'  => __('notifications', 'subscribr'),
+		 'desc' => __('Enter the terminology to use for plural "notifications". E.g. "alerts", "subscriptions", "notifications", etc.', 'subscribr')
 	)
 );
 
@@ -173,14 +200,14 @@ do_action('subscribr_option_add', $subscribr_options);
  */
 $subscribr_options->HelpTab(
 	array(
-		 'id'      => 'es-help-tab',
+		 'id'      => 'subscribr-help-tab',
 		 'title'   => sprintf(__('%s Documentation', 'subscribr'), SUBSCRIBR_PLUGIN_NAME),
 		 'content' => sprintf(__('<p>%1$s documentation is available online at <a href="http://mindsharelabs.com/topics/%2$s/" target="_blank">http://mindsharelabs.com/topics/%2$s/</a></p>', 'subscribr'), SUBSCRIBR_PLUGIN_NAME, SUBSCRIBR_PLUGIN_SLUG)
 	)
 );
 $subscribr_options->HelpTab(
 	array(
-		 'id'      => 'es-support-tab',
+		 'id'      => 'subscribr-support-tab',
 		 'title'   => __('Support Forum', 'subscribr'),
 		 'content' => sprintf(__('<p>Get support on the WordPress.org forums: <a href="http://wordpress.org/support/plugin/%1$s" target="_blank">http://wordpress.org/support/plugin/%1$s</a></p><p>To get premium one-on-one support, contact us: <a href="http://mind.sh/are/contact/" target="_blank">http://mind.sh/are/contact/</a></p>', 'subscribr'), SUBSCRIBR_PLUGIN_SLUG)
 	)
@@ -192,7 +219,7 @@ $secure_tab_content = sprintf(__('<p>Get the Mindshare Team to secure and protec
 
 $subscribr_options->HelpTab(
 	array(
-		 'id'      => 'es-security-tab',
+		 'id'      => 'subscribr-security-tab',
 		 'title'   => __('Protect Your Site', 'subscribr'),
 		 'content' => $secure_tab_content
 	)

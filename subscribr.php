@@ -33,14 +33,16 @@ Domain Path: /lang
  *
  * ToDo List:
  *
+ * @todo      - finish default email template file
+ * @todo      - add double opt in
+ * @todo      - add opt out option for individual posts
  * @todo      - finish internationalizing
  * @todo      - add merge fields
  * @todo      - add email editor(s) to options page
- * @todo      - add default email template file
  * @todo      - add html/plain text options
  * @todo      - add scheduling options / digest mode
  * @todo      - add analytics options... talk to Bryce about this
- * @todo      - add minimum role option for subscriptions
+ * @todo      - add minimum role option for notifications
  *
  * Premium features:
  *
@@ -126,20 +128,24 @@ if(!class_exists("Subscribr")) :
 		 */
 		public function __construct() {
 
-			// load scripts, etc
-			add_action('wp_print_scripts', array($this, 'print_scripts'));
-
 			// i8n
 			add_action('plugins_loaded', array($this, 'load_textdomain'));
+
+			// setup the options page
+			add_action('init', array($this, 'options_init'));
+
+			// load scripts, etc
+			add_action('wp_print_scripts', array($this, 'print_scripts'));
+			add_action('admin_head', array($this, 'head_scripts'));
+			add_action('wp_head', array($this, 'head_scripts'));
 
 			// action links
 			add_filter('plugin_action_links', array($this, 'plugin_action_links'), 10, 2);
 
 			// action to send emails
-			add_action('wp_insert_post', array($this, 'user_query'));
+			add_action('publish_post', array($this, 'user_query'));
 
-			// setup the options page
-			add_action('init', array($this, 'options_init'));
+
 			//$this->notification_send(2); debugging
 		}
 
@@ -166,8 +172,7 @@ if(!class_exists("Subscribr")) :
 		 */
 		public function print_scripts() {
 
-			// only enqueue if we're on the register / profile / Theme_My_Login pages and the options are enabled
-			if(($this->is_register() && $this->get_option('show_on_register')) || ($this->is_profile() && $this->get_option('show_on_profile')) || (class_exists('Theme_My_Login'))) {
+			if($this->do_scripts()) {
 
 				// register scripts
 				$scripts = array();
@@ -178,11 +183,11 @@ if(!class_exists("Subscribr")) :
 					'deps'   => array('jquery')
 				);
 
-				$scripts[] = array(
+				/*$scripts[] = array(
 					'handle' => 'subscribr',
 					'src'    => SUBSCRIBR_DIR_URL.'js/main.js',
 					'deps'   => array('jquery')
-				);
+				);*/
 
 				foreach($scripts as $script) {
 					wp_enqueue_script($script['handle'], $script['src'], $script['deps'], $this->version);
@@ -190,13 +195,48 @@ if(!class_exists("Subscribr")) :
 
 				// register styles
 				$styles = array(
-					'chosen-css' => SUBSCRIBR_DIR_URL.'lib/chosen/chosen.min.css',
+					'chosen-css'    => SUBSCRIBR_DIR_URL.'lib/chosen/chosen.min.css',
 					'subscribr-css' => SUBSCRIBR_DIR_URL.'css/subscribr.min.css',
 				);
 
 				foreach($styles as $k => $v) {
 					wp_enqueue_style($k, $v, FALSE, $this->version);
 				}
+			}
+		}
+
+		/**
+		 * Outputs JS into the HEAD
+		 *
+		 */
+		public function head_scripts() {
+			if($this->do_scripts()) {
+				?>
+				<script type="text/javascript">
+					jQuery.noConflict();
+					jQuery(document).ready(function() {
+						emailSubscribeInit();
+					});
+
+					function emailSubscribeInit() {
+						jQuery('.chosen-select').chosen({
+							search_contains:           true,
+							width:                     '100%',
+							placeholder_text_multiple: 'Select Email Subscriptions',
+							no_results_text:           'No results'
+						});
+					}
+				</script>
+			<?php
+			}
+		}
+
+		public function do_scripts() {
+			// only enqueue if we're on the register screen, user profile, or Theme_My_Login pages (and the options are enabled)
+			if(($this->is_register() && $this->get_option('show_on_register')) || ($this->is_profile() && $this->get_option('show_on_profile')) || (class_exists('Theme_My_Login'))) {
+				return TRUE;
+			} else {
+				return FALSE;
 			}
 		}
 
@@ -230,6 +270,7 @@ if(!class_exists("Subscribr")) :
 			include_once('controllers/options-init.php');
 			$this->options = get_option(SUBSCRIBR_OPTIONS);
 			new subscribr_options($this->options);
+
 		}
 
 		/**
@@ -252,19 +293,19 @@ if(!class_exists("Subscribr")) :
 				return FALSE;
 			}
 
-			if(array_key_exists('subscribed-terms', $_POST)) {
-				$subscribed_terms = array();
+			if(array_key_exists('subscribr-terms', $_POST)) {
+				$subscribr_terms = array();
 
 				// delete any invalid terms the user may have typed in manually
-				foreach($_POST['subscribed-terms'] as $term) {
+				foreach($_POST['subscribr-terms'] as $term) {
 					$term_result = term_exists($term);
 					if($term_result !== 0 && $term_result !== NULL) {
-						$subscribed_terms[] = $term;
+						$subscribr_terms[] = $term;
 					}
 				}
 			} else {
 				// no terms were selected
-				$subscribed_terms = FALSE;
+				$subscribr_terms = FALSE;
 			}
 
 			if(array_key_exists('subscribr-pause', $_POST) && $_POST['subscribr-pause'] == 1) {
@@ -274,34 +315,37 @@ if(!class_exists("Subscribr")) :
 				$subscribr_pause = 0;
 			}
 
-			if(array_key_exists('unsubscribe-all', $_POST) && $_POST['unsubscribe-all'] == 1) {
+			if(array_key_exists('subscribr-unsubscribe', $_POST) && $_POST['subscribr-unsubscribe'] == 1) {
 				// the user is unsubscribing
-				$unsubscribe_all = 1;
-				$subscribed_terms = FALSE; // remove existing subscriptions
+				$subscribr_unsubscribe = 1;
+				$subscribr_terms = FALSE; // remove existing notifications
 				$subscribr_pause = 0;
 			} else {
-				$unsubscribe_all = 0;
+				$subscribr_unsubscribe = 0;
 			}
 
-			update_user_meta($user_id, 'subscribed-terms', $subscribed_terms);
+			update_user_meta($user_id, 'subscribr-terms', $subscribr_terms);
 			update_user_meta($user_id, 'subscribr-pause', $subscribr_pause);
-			update_user_meta($user_id, 'unsubscribe-all', $unsubscribe_all);
+			update_user_meta($user_id, 'subscribr-unsubscribe', $subscribr_unsubscribe);
 		}
 
 		/**
 		 *
-		 * Find all users who want notifications for a given post
+		 * When a new post is saved find all users with matching notification preferences.
 		 *
 		 * @param $post_id
 		 */
 		public function user_query($post_id) {
-
+			
 			if(!wp_is_post_revision($post_id)) {
+
+				echo '<pre>'; var_dump(get_post($post_id)); echo '</pre>'; die;
+
 
 				do_action('subscribr_pre_user_query');
 
-				// email subscriptions
-				if($this->get_option('enabled_email_subscriptions')) {
+				// email notifications
+				if($this->get_option('enabled_email_notifications')) {
 
 					if($_POST['post_type'] == "post" && $_POST['post_status'] == "publish") { // modify this to set the post type, or remove to allow all post types
 						$post = get_post($post_id);
@@ -315,7 +359,6 @@ if(!class_exists("Subscribr")) :
 				}
 
 				do_action('subscribr_post_user_query');
-
 			}
 		}
 
@@ -371,7 +414,7 @@ if(!class_exists("Subscribr")) :
 		}
 
 		/**
-		 * Determine what taxonomies are enabled for email subscription, if any.
+		 * Determine what taxonomies are enabled for email notification, if any.
 		 *
 		 */
 		public function get_enabled_taxonomies() {
@@ -453,10 +496,16 @@ if(!class_exists("Subscribr")) :
 			}
 		}
 
+		/**
+		 * @return bool
+		 */
 		public function is_profile() {
 			return in_array($GLOBALS['pagenow'], array('profile.php'));
 		}
 
+		/**
+		 * @return bool
+		 */
 		public function is_register() {
 			return in_array($GLOBALS['pagenow'], array('wp-register.php'));
 		}

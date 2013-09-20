@@ -2,25 +2,33 @@
 /**
  * default-email-template.php
  *
+ * Modify this to suit your needs by copying it into your active
+ * theme folder into a subdirectory named `subscribr`.
+ *
  * @created   9/17/13 3:26 PM
  * @author    Mindshare Studios, Inc.
  * @copyright Copyright (c) 2013
  * @link      http://www.mindsharelabs.com/documentation/
  *
  */
+// @todo set proper post vars
+$msg = " ";
+$msg .= "A new post is available on ".get_bloginfo('name').":";
+$msg .= " ";
+$msg .= get_the_title($post_id).' ('.get_post($post_id)->post_date.')';
+$msg .= " ";
+$msg .= wp_trim_words(get_post($post_id)->post_content, $num_words = 55, $more = NULL);
+$msg .= " ";
+$msg .= "Permalink: ".get_permalink($post_id);
+$msg .= " ";
+$msg .= "---------------------------------------";
+$msg .= " ";
+$msg .= "You received this email because you asked to be notified when new updates are published.";
+$msg .= " ";
+$msg .= "Manage your ".$subscribr->get_option('notification_label_plural')." or unsubscribe here: {PROFILELINK}";
+$msg .= " ";
+$msg .= "---------------------------------------";
+$msg .= " ";
+$msg .= "- The ".get_bloginfo('name')." Team";
+$msg .= " ";
 
-/*
-$permalink = get_permalink($post_id);
-$posttitle = get_the_title($post_id);
-global $post;
-$content = get_post($post_id)->post_content;
-$excerpt = wp_trim_words($content, $num_words = 55, $more = NULL);
-$postdate = get_post($post_id)->post_date;
-
-$permalink .= "?utm_source=blogtoemail&utm_medium=email&utm_campaign=blogtoemail".date("mdy"); // append analytics tracking parameters here
-
-$template["htmlBody"] = "compose HTML email content here";
-
-$contacts = "put a query here to pull an array of contacts who want the email";
-
-*/

@@ -1,7 +1,7 @@
 === Email Subscribe ===
 Contributors: mindshare
 Donate link: http://mind.sh/are/donate/
-Tags: email, notifications, subscribe, subscriptions, notify
+Tags: email, notifications, subscribe, subscriptions, notify, alerts
 Requires at least: 3.5
 Tested up to: 3.6.1
 Stable tag: trunk
