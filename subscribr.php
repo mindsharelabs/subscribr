@@ -40,6 +40,7 @@ Domain Path: /lang
  * @todo      - add html/plain text options
  * @todo      - add scheduling options / digest mode
  * @todo      - add analytics options... talk to Bryce about this
+ * @todo      - add minimum role option for subscriptions
  *
  * Premium features:
  *
@@ -189,6 +190,7 @@ if(!class_exists("Subscribr")) :
 
 				// register styles
 				$styles = array(
+					'chosen-css' => SUBSCRIBR_DIR_URL.'lib/chosen/chosen.min.css',
 					'subscribr-css' => SUBSCRIBR_DIR_URL.'css/subscribr.min.css',
 				);
 
@@ -287,23 +289,33 @@ if(!class_exists("Subscribr")) :
 		}
 
 		/**
+		 *
+		 * Find all users who want notifications for a given post
+		 *
 		 * @param $post_id
 		 */
 		public function user_query($post_id) {
 
-			if(wp_is_post_revision($post_id) == FALSE) {
-				if($_POST['post_type'] == "post" && $_POST['post_status'] == "publish") { // modify this to set the post type, or remove to allow all post types
-					$post = get_post($post_id);
-					// quit if post has been published already
-					if($post->post_date != $post->post_modified) {
+			if(!wp_is_post_revision($post_id)) {
+
+				do_action('subscribr_pre_user_query');
+
+				// email subscriptions
+				if($this->get_option('enabled_email_subscriptions')) {
+
+					if($_POST['post_type'] == "post" && $_POST['post_status'] == "publish") { // modify this to set the post type, or remove to allow all post types
+						$post = get_post($post_id);
+						// quit if post has been published already
+						if($post->post_date != $post->post_modified) {
+							return;
+						}
+						$this->notification_send($post_id);
 						return;
 					}
-					$this->notification_send($post_id);
-					return;
 				}
-			}
-			if(!current_user_can('edit_post', $post_id)) {
-				return;
+
+				do_action('subscribr_post_user_query');
+
 			}
 		}
 

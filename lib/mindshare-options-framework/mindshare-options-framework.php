@@ -1117,7 +1117,6 @@ if(!class_exists('mindshare_options_framework')) :
 				$li = "<li id='item_{$attachment_id}'>";
 				$li .= "<img src='{$attachment['url']}' alt='image_{$attachment_id}' />";
 
-				
 				$li .= "<a title='".__('Delete this image')."' class='at-delete-file' href='#' rel='{$nonce}|{$post_id}|{$id}|{$attachment_id}'><img src='".$this->SelfPath."/img/delete-16.png' alt='".__('Delete')."' /></a>";
 				$li .= "<input type='hidden' name='{$id}[]' value='{$attachment_id}' />";
 				$li .= "</li>";
@@ -2447,7 +2446,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'std' => // default value, string optional
 		 *    'style' =>   // custom style for field, string optional
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -2485,7 +2484,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'std' => // default value, string optional
 		 *    'style' =>   // custom style for field, string optional
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -2514,7 +2513,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'style' =>   // custom style for field, string optional
 		 *    'syntax' =>   // syntax language to use in editor (php,javascript,css,html)
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -2592,7 +2591,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'desc' => // field description, string optional
 		 *    'std' => // default value, string optional
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -2627,7 +2626,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'std' => // default value, string optional
 		 *    'validation_function' => // validate function, string optional
 		 *    'fields' => list of fields to show conditionally.
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -2663,7 +2662,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'desc' => // field description, string optional
 		 *    'std' => // default value, string optional
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array : remember to call: $checkbox_list = get_post_meta(get_the_ID(), 'meta_name', false);
 		 */
@@ -2698,7 +2697,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'std' => // default value, string optional
 		 *    'style' =>   // custom style for field, string optional
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -2734,7 +2733,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'std' => // default value, (array) optional
 		 *    'multiple' => // select multiple values, optional. Default is false.
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -2771,7 +2770,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'std' => // default value, (array) optional
 		 *    'multiple' => // select multiple values, optional. Default is false.
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -2871,7 +2870,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'std' => // default value, (array) optional
 		 *    'multiple' => // select multiple values, optional. Default is false.
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -3160,7 +3159,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'desc' => // field description, string optional
 		 *    'std' => // default value, (array) optional
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -3197,7 +3196,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'desc' => // field description, string optional
 		 *    'std' => // default value, string optional
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -3233,7 +3232,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'std' => // default value, string optional
 		 *    'validation_function' => // validate function, string optional
 		 *    'format' => // date format, default yy-mm-dd. Optional. Default "'d MM, yy'"  See more formats here: http://goo.gl/Wcwxn
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -3268,7 +3267,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'std' => // default value, string optional
 		 *    'validation_function' => // validate function, string optional
 		 *    'format' => // time format, default hh:mm. Optional. See more formats here: http://goo.gl/83woX
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -3302,7 +3301,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'desc' => // field description, string optional
 		 *    'std' => // default value, string optional
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -3334,7 +3333,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'name' => // field name/label string optional
 		 *    'desc' => // field description, string optional
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -3362,7 +3361,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'std' => // default value, string optional
 		 *    'style' =>   // custom style for field, string optional Default 'width: 300px; height: 400px'
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -3400,7 +3399,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'desc' => // field description, string optional
 		 *    'std' => // default value, string optional
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -3440,7 +3439,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'desc' => // field description, string optional
 		 *    'std' => // default value, string optional
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -3480,7 +3479,7 @@ if(!class_exists('mindshare_options_framework')) :
 		 *    'desc' => // field description, string optional
 		 *    'std' => // default value, string optional
 		 *    'validation_function' => // validate function, string optional
-		 * @param $repeater bool  is this a field inside a repeatr? true|false(default)
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
 		 */
@@ -3995,7 +3994,7 @@ if(!class_exists('mindshare_options_framework')) :
 			$debug = debug_backtrace();
 
 			$str = '';
-			
+
 			if($echo) {
 				$str .= '<div id="message" class="error"><p><strong>';
 			}
@@ -4003,14 +4002,14 @@ if(!class_exists('mindshare_options_framework')) :
 			if($echo) {
 				$str .= '</strong>';
 			}
-			
+
 			$str .= ": ".$msg." in ".$debug[1]["file"]." on line ".$debug[1]["line"];
 			if($echo) {
 				$str .= '</p></div>';
 			}
 
 			if($echo) {
-				
+
 				if($die) {
 					die($str);
 				} else {

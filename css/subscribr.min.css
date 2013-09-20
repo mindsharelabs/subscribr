@@ -1,0 +1,6 @@
+.login-action-register #login .hidden-on-singup {
+	display:none !important
+}
+.login-action-register #login {
+	width:620px
+}

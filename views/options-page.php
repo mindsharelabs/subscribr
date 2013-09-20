@@ -55,6 +55,14 @@ $subscribr_options->TabsListing(
 $subscribr_options->OpenTab($subscribr_tabs_keys[0]);
 $subscribr_options->Title($subscribr_tabs[$subscribr_tabs_keys[0]]);
 
+$subscribr_options->addCheckbox(
+	'enabled_email_subscriptions',
+	array(
+		 'name' => __('Show subscription options on user profile', 'subscribr'),
+		 'std'  => TRUE,
+	)
+);
+
 $subscribr_options->addText(
 	'from_name',
 	array(
@@ -72,6 +80,21 @@ $subscribr_options->addText(
 		 'desc' => ''
 	)
 );
+
+$subscribr_options->addCode(
+	'email_new_post',
+	array(
+		 'type'   => 'code',
+		 'id'     => $id,
+		 'std'    => '',
+		 'desc'   => '',
+		 'style'  => '',
+		 'name'   => 'New Post Email Template',
+		 'syntax' => 'html',
+
+	)
+);
+
 $subscribr_options->CloseTab();
 
 /*
@@ -163,9 +186,9 @@ $subscribr_options->HelpTab(
 	)
 );
 $secure_tab_content = sprintf(__('<p>Get the Mindshare Team to secure and protect your WordPress site for $9.95/month: <a href="http://mind.sh/are/wordpress-security-and-backup-service/check/?url=%1$s&amp;active=0&amp;sale=1&amp;d=%2$s" target="_blank">http://mind.sh/are/wordpress-security-and-backup-service/</a></p>', 'subscribr'), get_bloginfo("url"), str_replace(array(
-																																																																																														   "http://",
-																																																																																														   "https://"
-																																																																																													  ), "", get_home_url()));
+																																																																																													 "http://",
+																																																																																													 "https://"
+																																																																																												), "", get_home_url()));
 
 $subscribr_options->HelpTab(
 	array(
