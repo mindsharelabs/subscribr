@@ -33,18 +33,19 @@ Domain Path: /lang
  *
  * ToDo List:
  *
- * @todo      - rename to subscribe, subscriber, or subscribr
+ * @todo      - rename to subscribr
  * @todo      - finish internationalizing
- * @todo      - add email editor(s) to options page
  * @todo      - add merge fields
+ * @todo      - add email editor(s) to options page
+ * @todo      - add default email template file
  * @todo      - add html/plain text options
  * @todo      - add scheduling options / digest mode
- * @todo      - add default email template file
  *
  * Premium features:
  *
  * @todo      - add integration with MailChimp/Mandrill
  * @todo      - add integration with Constant Contact
+ * @todo      - add integration with Aweber
  * @todo      - add CSV subscriber export
  * @todo      - SMS text messages
  * @todo      - notification on site (like Facebook)
@@ -138,10 +139,6 @@ if(!class_exists("EmailSubscribe")) :
 
 			// setup the options page
 			add_action('init', array($this, 'options_init'));
-
-//			echo '<pre>'; var_dump($this->get_option('show_on_profile')); echo '</pre>'; die;
-			
-
 			//$this->notification_send(2); debugging
 		}
 
@@ -163,34 +160,41 @@ if(!class_exists("EmailSubscribe")) :
 		}
 
 		/**
+		 * Enqueues plugin CSS/JS.
 		 *
 		 */
 		public function print_scripts() {
 
-			// register scripts
-			$scripts = array();
-			$scripts[] = array(
-				'handle' => 'chosen-js',
-				'src'    => ES_DIR_URL.'lib/chosen/chosen.jquery.min.js',
-				'deps'   => array('jquery')
-			);
-			$scripts[] = array(
-				'handle' => 'email-subscribe',
-				'src'    => ES_DIR_URL.'js/main.js',
-				'deps'   => array('jquery')
-			);
+			// only enqueue if we're on the register / profile / Theme_My_Login pages and the options are enabled
+			if(($this->is_register() && $this->get_option('show_on_register')) || ($this->is_profile() && $this->get_option('show_on_profile')) || (class_exists('Theme_My_Login'))) {
 
-			foreach($scripts as $script) {
-				wp_enqueue_script($script['handle'], $script['src'], $script['deps'], $this->version);
-			}
+				// register scripts
+				$scripts = array();
 
-			// register styles
-			$styles = array(
-				'email-subscribe-css' => ES_DIR_URL.'css/email-subscribe.min.css',
-			);
+				$scripts[] = array(
+					'handle' => 'chosen-js',
+					'src'    => ES_DIR_URL.'lib/chosen/chosen.jquery.min.js',
+					'deps'   => array('jquery')
+				);
 
-			foreach($styles as $k => $v) {
-				wp_enqueue_style($k, $v, FALSE, $this->version);
+				$scripts[] = array(
+					'handle' => 'email-subscribe',
+					'src'    => ES_DIR_URL.'js/main.js',
+					'deps'   => array('jquery')
+				);
+
+				foreach($scripts as $script) {
+					wp_enqueue_script($script['handle'], $script['src'], $script['deps'], $this->version);
+				}
+
+				// register styles
+				$styles = array(
+					'email-subscribe-css' => ES_DIR_URL.'css/email-subscribe.min.css',
+				);
+
+				foreach($styles as $k => $v) {
+					wp_enqueue_style($k, $v, FALSE, $this->version);
+				}
 			}
 		}
 
@@ -435,6 +439,14 @@ if(!class_exists("EmailSubscribe")) :
 			} else {
 				return FALSE;
 			}
+		}
+
+		public function is_profile() {
+			return in_array($GLOBALS['pagenow'], array('profile.php'));
+		}
+
+		public function is_register() {
+			return in_array($GLOBALS['pagenow'], array('wp-register.php'));
 		}
 	}
 endif;
