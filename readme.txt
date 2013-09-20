@@ -1,7 +1,7 @@
 === Email Subscribe ===
 Contributors: mindshare
 Donate link: http://mind.sh/are/donate/
-Tags: email, notification, subscribe
+Tags: email, notifications, subscribe, subscriptions, notify
 Requires at least: 3.5
 Tested up to: 3.6.1
 Stable tag: trunk
@@ -16,7 +16,7 @@ Allows WordPress users to subscribe to email notifications for new posts, pages,
 
 == Installation ==
 
-1. Upload the `email-subscribe` folder to the `/wp-content/plugins/` directory.
+1. Upload the `subscribr` folder to the `/wp-content/plugins/` directory.
 1. Activate the plugin through the 'Plugins' menu in WordPress.
 
 == Frequently Asked Questions ==
@@ -27,7 +27,8 @@ Please ask one on the support forum!
 
 == Screenshots ==
 
-1. This screen shot description corresponds to screenshot-1.png
+1. The admin options screen screenshot-1.png
+1. The user profile options screenshot-2.png
 
 == Changelog ==
 

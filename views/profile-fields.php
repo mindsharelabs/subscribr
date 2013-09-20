@@ -17,17 +17,17 @@ if(!is_array($enabled_taxonomies)) {
 }
 
 $subscribed_terms = get_user_meta(get_current_user_id(), 'subscribed-terms', TRUE);
-$email_subscribe_pause = get_user_meta(get_current_user_id(), 'email-subscribe-pause', TRUE);
+$subscribr_pause = get_user_meta(get_current_user_id(), 'subscribr-pause', TRUE);
 $unsubscribe_all = get_user_meta(get_current_user_id(), 'unsubscribe-all', TRUE);
 
-echo apply_filters('es_profile_title', '<h3 class="'.ES_PLUGIN_SLUG.'">'.__('Subscribe to Updates via Email', 'email-subscribe').'</h3>');
-echo apply_filters('es_profile_table_open', '<table class="form-table '.ES_PLUGIN_SLUG.'">');
+echo apply_filters('subscribr_profile_title', '<h3 class="'.SUBSCRIBR_PLUGIN_SLUG.'">'.__('Subscribe to Updates via Email', 'subscribr').'</h3>');
+echo apply_filters('subscribr_profile_table_open', '<table class="form-table '.SUBSCRIBR_PLUGIN_SLUG.'">');
 ?>
 
 	<tbody>
-	<tr id="email-subscribe" class="form-field field field_type-checkbox">
+	<tr id="subscribr" class="form-field field field_type-checkbox">
 		<th valign="top" scope="row">
-			<label for="subscribed-terms"><?php echo apply_filters('es_profile_subscribed_terms_label', __('Your Notifications', 'email-subscribe')); ?></label></th>
+			<label for="subscribed-terms"><?php echo apply_filters('subscribr_profile_subscribed_terms_label', __('Your Notifications', 'subscribr')); ?></label></th>
 		<td>
 			<div style="max-width:500px">
 				<select name="subscribed-terms[]" id="subscribed-terms" class="chosen-select" multiple="multiple">
@@ -43,24 +43,24 @@ echo apply_filters('es_profile_table_open', '<table class="form-table '.ES_PLUGI
 					<?php endforeach; // end taxonomy loop ?>
 				</select>
 			</div>
-			<p class="description"><?php echo apply_filters('es_profile_subscribed_terms_description', __('Choose from the terms above to enable email notifications when new posts are published.', 'email-subscribe')); ?></p>
+			<p class="description"><?php echo apply_filters('subscribr_profile_subscribed_terms_description', __('Choose from the terms above to enable email notifications when new posts are published.', 'subscribr')); ?></p>
 		</td>
 	</tr>
 	<tr class="hidden-on-singup">
-		<th scope="row"><?php _e('Pause Notifications', 'email-subscribe'); ?></th>
+		<th scope="row"><?php _e('Pause Notifications', 'subscribr'); ?></th>
 		<td>
-			<label for="email-subscribe-pause">
-				<input name="email-subscribe-pause" type="checkbox" id="email-subscribe-pause" value="1" <?php checked($email_subscribe_pause, 1); ?>> <?php _e('Temporarily stop all notifications.', 'email-subscribe'); ?>
+			<label for="subscribr-pause">
+				<input name="subscribr-pause" type="checkbox" id="subscribr-pause" value="1" <?php checked($subscribr_pause, 1); ?>> <?php _e('Temporarily stop all notifications.', 'subscribr'); ?>
 			</label>
 		</td>
 	</tr>
 	<tr class="hidden-on-singup">
-		<th scope="row"><?php _e('Unsubscribe from All', 'email-subscribe'); ?></th>
+		<th scope="row"><?php _e('Unsubscribe from All', 'subscribr'); ?></th>
 		<td>
 			<label for="unsubscribe-all">
-				<input name="unsubscribe-all" type="checkbox" id="unsubscribe-all" value="1" <?php checked($unsubscribe_all, 1); ?>> <?php _e('Remove all preferences and stop notifications.', 'email-subscribe'); ?>
+				<input name="unsubscribe-all" type="checkbox" id="unsubscribe-all" value="1" <?php checked($unsubscribe_all, 1); ?>> <?php _e('Remove all preferences and stop notifications.', 'subscribr'); ?>
 			</label>
 		</td>
 	</tr>
 	</tbody>
-<?php echo apply_filters('es_profile_table_close', '</table>');
+<?php echo apply_filters('subscribr_profile_table_close', '</table>');
