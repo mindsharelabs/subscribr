@@ -34,7 +34,7 @@ Domain Path: /lang
  * ToDo List:
  *
  * @todo      - finish default email template file
- * @todo      - add double opt in
+ * @todo      - add double opt-in
  * @todo      - add opt out option for individual posts
  * @todo      - finish internationalizing
  * @todo      - add merge fields
@@ -47,6 +47,7 @@ Domain Path: /lang
  * Premium features:
  *
  * @todo      - add integration with MailChimp/Mandrill
+ * @todo      - add list management for Roles, use-case wholsale / retail
  * @todo      - add integration with Constant Contact
  * @todo      - add integration with Aweber
  * @todo      - add CSV subscriber export
@@ -144,8 +145,6 @@ if(!class_exists("Subscribr")) :
 
 			// action to send emails
 			add_action('publish_post', array($this, 'user_query'));
-
-
 			//$this->notification_send(2); debugging
 		}
 
@@ -270,7 +269,6 @@ if(!class_exists("Subscribr")) :
 			include_once('controllers/options-init.php');
 			$this->options = get_option(SUBSCRIBR_OPTIONS);
 			new subscribr_options($this->options);
-
 		}
 
 		/**
@@ -304,6 +302,7 @@ if(!class_exists("Subscribr")) :
 					}
 				}
 			} else {
+
 				// no terms were selected
 				$subscribr_terms = FALSE;
 			}
@@ -342,9 +341,44 @@ if(!class_exists("Subscribr")) :
 				$post = get_post($post_id);
 
 				// quit if post has been published already
-				if($post->post_date != $post->post_modified) {
+				/*if($post->post_date != $post->post_modified) {
 					return;
-				}
+				}*/
+
+				// grab the terms (as an array instead of an object)
+				$post_terms = json_decode(json_encode(wp_get_object_terms($post_id, $this->get_enabled_taxonomies())), TRUE);
+
+				//echo '<pre>'; var_dump($post_terms); echo '</pre>'; die;
+
+				// query users for notification preferences that match this post
+				$user_query = new WP_User_Query(
+					array(
+						 'fields' => 'id',
+						 //'fields' => 'all_with_meta',
+						 // check for any subscribed terms
+						 'meta_query' => array(
+							 array(
+								 'key'     => 'subscribr-terms',
+								 'value'   => '',
+								 'compare' => '!='
+							 ),
+							 // make sure notifications are not disabled
+							 array(
+								 'key'     => 'subscribr-pause',
+								 'value'   => 1,
+								 'compare' => '!='
+							 ),
+							 array(
+								 'key'     => 'subscribr-unsubscribe',
+								 'value'   => 1,
+								 'compare' => '!='
+							 )
+						 )
+					)
+				);
+				
+				echo '<pre>'; var_dump($user_query); echo '</pre>'; die;
+				
 
 				do_action('subscribr_pre_user_query', $post); // likely the best spot to plugin other types of notifications (SMS, etc)
 
@@ -355,7 +389,6 @@ if(!class_exists("Subscribr")) :
 					$post_status = get_post_status_object(get_post_status($post_id));
 					if($post_status->public) {
 						$this->notification_send($post_id);
-						return;
 					}
 				}
 
