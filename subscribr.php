@@ -351,7 +351,7 @@ if(!class_exists("Subscribr")) :
 				//echo '<pre>'; var_dump($post_terms); echo '</pre>'; die;
 
 				// query users for notification preferences that match this post
-				$user_query = new WP_User_Query(
+				$users_with_active_notifications = new WP_User_Query(
 					array(
 						 'fields' => 'id',
 						 //'fields' => 'all_with_meta',
@@ -376,8 +376,8 @@ if(!class_exists("Subscribr")) :
 						 )
 					)
 				);
-				
-				echo '<pre>'; var_dump($user_query); echo '</pre>'; die;
+
+				$users_with_active_notifications;
 				
 
 				do_action('subscribr_pre_user_query', $post); // likely the best spot to plugin other types of notifications (SMS, etc)
