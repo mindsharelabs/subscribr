@@ -65,19 +65,28 @@ if(!class_exists('subscribr_options')) :
 				$option_changed = TRUE;
 			}
 			if(!array_key_exists('from_email', $this->options)) {
-				$this->options['from_email'] = apply_filters('subscribr_default_email', get_option('admin_email'));
+				$this->options['from_email'] = apply_filters('subscribr_default_from_email', get_option('admin_email'));
 				$option_changed = TRUE;
 			}
 
-			if(!array_key_exists('notification_label_plural', $this->options)) {
-				$this->options['notification_label_plural'] = apply_filters('subscribr_notification_label_plural', __('notifications', 'subscribr'));
+			if(!array_key_exists('notifications_label', $this->options)) {
+				$this->options['notifications_label'] = apply_filters('subscribr_default_notifications_label', __('notifications', 'subscribr'));
 				$option_changed = TRUE;
 			}
 
 			if(!array_key_exists('notification_label', $this->options)) {
-				$this->options['notification_label'] = apply_filters('subscribr_notification_label', __('notification', 'subscribr'));
+				$this->options['notification_label'] = apply_filters('subscribr_default_notification_label', __('notification', 'subscribr'));
 				$option_changed = TRUE;
 			}
+
+			if(!array_key_exists('email_body', $this->options)) {
+				// import the default template $email_body
+				include(SUBSCRIBR_DIR_PATH.'/views/default-email-template.php');
+				$this->options['email_body'] = apply_filters('subscribr_default_email_body', $email_body);
+				$option_changed = TRUE;
+			}
+
+			do_action('subscribr_defaults');
 
 			if($option_changed) {
 				$this->save_options();
@@ -91,9 +100,11 @@ if(!class_exists('subscribr_options')) :
 		public function apply_options() {
 
 			if($this->options['show_on_profile']) {
+
 				// actions to add fields to the user profile, register form and edit profile
 				add_action('show_user_profile', array($this, 'user_profile_fields'));
 				add_action('edit_user_profile', array($this, 'user_profile_fields'));
+
 				// actions to store updated preferences in the user meta table
 				add_action('personal_options_update', array($this, 'update_user_meta'));
 				add_action('edit_user_profile_update', array($this, 'update_user_meta'));

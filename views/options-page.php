@@ -12,6 +12,7 @@
 $subscribr_options = new mindshare_options_framework(
 	array(
 		 'project_name' => SUBSCRIBR_PLUGIN_NAME,
+		 'project_slug' => SUBSCRIBR_PLUGIN_SLUG,
 		 'menu'         => 'settings',
 		 'page_title'   => sprintf(__('%s Settings', 'subscribr'), SUBSCRIBR_PLUGIN_NAME),
 		 'menu_title'   => SUBSCRIBR_PLUGIN_NAME,
@@ -60,7 +61,7 @@ $subscribr_options->addCheckbox(
 	array(
 		 'name' => __('Enable Email notifications', 'subscribr'),
 		 'std'  => TRUE,
-		 'desc'  => __('Globally enable or disable email notifications.', 'subscribr'),
+		 'desc' => __('Globally enable or disable email notifications.', 'subscribr'),
 	)
 );
 
@@ -83,21 +84,21 @@ $subscribr_options->addText(
 );
 
 $subscribr_options->addText(
-	'email_subject_new_post',
+	'email_subject',
 	array(
-		 'name' => __('New Post Email Subject', 'subscribr'),
-		 'std'  => get_bloginfo('name').' '.__($this->get_option('notification_label'), 'subscribr'), // @todo
-		 'desc' => ''
+		 'name' => __('Email subject', 'subscribr'),
+		 'std'  => __('A notification from %sitename%', 'subscribr'),
+		 'desc' => __('Available variables: %post_title%, %post_date%, %post_excerpt%, %permalink%,%site_name%, %site_url%, %user_ip%, %notification_label%, %notifications_label%, %profile_link%', 'subscribr')
 	)
 );
 
 $subscribr_options->addCode(
-	'email_body_new_post',
+	'email_body',
 	array(
 		 'type'   => 'code',
-		 'std'    => 'Feature not yet implemented', //@todo
+		 'std'    => '',
 		 'desc'   => __('This email template will be used for email notifications when new posts are published', 'subscribr'),
-		 'name'   => 'New Post Email Template',
+		 'name'   => 'Email Body',
 		 'syntax' => 'html',
 
 	)
@@ -116,6 +117,7 @@ $subscribr_options->addCheckbox(
 	'enable_all_terms',
 	array(
 		 'name' => __('Enable All Terms', 'subscribr'),
+		 'std'  => TRUE,
 		 'desc' => __('Turning this ON will enable all taxonomy terms, overriding the individual settings below.', 'subscribr')
 	)
 );
@@ -158,7 +160,6 @@ $subscribr_options->addCheckbox(
 	)
 );
 
-
 $subscribr_options->addText(
 	'notification_label',
 	array(
@@ -169,7 +170,7 @@ $subscribr_options->addText(
 );
 
 $subscribr_options->addText(
-	'notification_label_plural',
+	'notifications_label',
 	array(
 		 'name' => __('Notification Label Plural', 'subscribr'),
 		 'std'  => __('notifications', 'subscribr'),

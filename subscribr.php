@@ -33,12 +33,11 @@ Domain Path: /lang
  *
  * ToDo List:
  *
+ * @todo      - add widget
  * @todo      - finish default email template file
  * @todo      - add double opt-in
- * @todo      - add opt out option for individual posts
+ * @todo      - add opt out option for individual posts (for authors)
  * @todo      - finish internationalizing
- * @todo      - add merge fields
- * @todo      - add email editor(s) to options page
  * @todo      - add html/plain text options
  * @todo      - add scheduling options / digest mode
  * @todo      - add analytics options... talk to Bryce about this
@@ -144,7 +143,7 @@ if(!class_exists("Subscribr")) :
 			add_filter('plugin_action_links', array($this, 'plugin_action_links'), 10, 2);
 
 			// action to send emails
-			add_action('publish_post', array($this, 'user_query'));
+			add_action('publish_post', array($this, 'queue_notifications'));
 			//$this->notification_send(2); debugging
 		}
 
@@ -334,26 +333,21 @@ if(!class_exists("Subscribr")) :
 		 *
 		 * @param $post_id
 		 */
-		public function user_query($post_id) {
+		public function queue_notifications($post_id) {
 
 			if(!wp_is_post_revision($post_id)) {
 
 				$post = get_post($post_id);
 
-				// quit if post has been published already
+				// quit if post has been published already @todo uncomment after testing
 				/*if($post->post_date != $post->post_modified) {
 					return;
 				}*/
 
-				// grab the terms (as an array instead of an object)
-				$post_terms = json_decode(json_encode(wp_get_object_terms($post_id, $this->get_enabled_taxonomies())), TRUE);
-
-				//echo '<pre>'; var_dump($post_terms); echo '</pre>'; die;
-
-				// query users for notification preferences that match this post
-				$users_with_active_notifications = new WP_User_Query(
+				// query users with active notification preferences
+				$active_user_ids = new WP_User_Query(
 					array(
-						 'fields' => 'id',
+						 'fields'     => 'id',
 						 //'fields' => 'all_with_meta',
 						 // check for any subscribed terms
 						 'meta_query' => array(
@@ -362,7 +356,7 @@ if(!class_exists("Subscribr")) :
 								 'value'   => '',
 								 'compare' => '!='
 							 ),
-							 // make sure notifications are not disabled
+							 // make sure notifications are not disabled or paused
 							 array(
 								 'key'     => 'subscribr-pause',
 								 'value'   => 1,
@@ -377,40 +371,98 @@ if(!class_exists("Subscribr")) :
 					)
 				);
 
-				$users_with_active_notifications;
-				
+				// grab the terms (as an array instead of an object)
+				$post_terms = json_decode(json_encode(wp_get_object_terms($post_id, $this->get_enabled_taxonomies())), TRUE);
 
-				do_action('subscribr_pre_user_query', $post); // likely the best spot to plugin other types of notifications (SMS, etc)
+				// array to hold matched users
+				$notify_user_ids = array();
 
-				// email notifications
-				if($this->get_option('enabled_email_notifications')) {
+				// 1. loop through the subscribed users
+				foreach($active_user_ids->results as $user_id) {
+					$user_id = intval($user_id); // data type correction
+					$subscribr_terms = get_user_meta($user_id, 'subscribr-terms', TRUE);
+					if(is_array($subscribr_terms)) {
 
-					// test for public post statuses, this allows for custom statuses as well as the default 'publish'
-					$post_status = get_post_status_object(get_post_status($post_id));
-					if($post_status->public) {
-						$this->notification_send($post_id);
+						// 2. loop through the subscribed terms
+						foreach($subscribr_terms as $term) {
+
+							// 3. loop through the post terms to test for a match
+							foreach($post_terms as $post_term) {
+								if($post_term['slug'] == $term) {
+
+									// 4. we've got a match, add the user to the notify array
+									$notify_user_ids[] = $user_id;
+								}
+							}
+						}
 					}
 				}
 
-				do_action('subscribr_post_user_query');
+				// remove duplicates so we don't send mail more than once!
+				$notify_user_ids = array_unique($notify_user_ids, SORT_NUMERIC);
+
+				if(!empty($notify_user_ids)) {
+
+					do_action('subscribr_pre_user_query', $post); // likely the best spot to plugin other types of notifications (SMS, etc)
+
+					// email notifications
+					if($this->get_option('enable_email_notifications')) {
+
+						// test for public post statuses, this allows for custom statuses as well as the default 'publish'
+						$post_status = get_post_status_object(get_post_status($post_id));
+						if($post_status->public) {
+							$this->notification_send($post_id, $user_id);
+						}
+					}
+
+					do_action('subscribr_post_user_query');
+				} else {
+
+					// no matches
+					do_action('subscribr_empty_user_query');
+				}
 			}
 		}
 
 		/**
 		 * @param $post_id
 		 */
-		public function notification_send($post_id) {
+		public function notification_send($post_id, $user_id) {
 
+			// 1. grab the appropriate message template
 			$template_files = $this->locate_theme_templates();
 
 			// test for user defined PHP email templates in the 'subscribr' folder in the current theme (or child theme)
 			if(locate_template($template_files)) {
-				// a template was found, so we'll try to use it
-
+				// a custom template was found
+				//@todo
 			} else {
 				// use the default template
+				//@todo
 			}
-			//wp_mail($to, $subject, $message, $headers, $attachments);
+
+			// 2. get users details and send the message
+			$user = get_user_by('id', $user_id);
+			$to_name = apply_filters('subsribr_to_name', $user->data->display_name);
+			$to_email = apply_filters('subscribr_to_email', $user->data->user_email);
+			$to = $to_name.' <'.$to_email.'>';
+
+			$from_name = apply_filters('subsribr_from_name', $this->get_option('from_name'));
+			$from_email = apply_filters('subscribr_from_email', $this->get_option('from_email'));
+			$from = $from_name.' <'.$from_email.'>';
+
+			$email_subject = $this->get_option('email_subject');
+			$email_subject = $this->merge_user_vars($email_subject, $post_id, $user_id);
+			$email_subject = apply_filters('subscribr_$email_subject', $email_subject);
+
+			$headers[] = 'From: '.$from;
+			//$headers[] = 'Content-type: text/html'; @todo
+
+			$message = $this->get_option('email_body');
+			$message = $this->merge_user_vars($message, $post_id, $user_id);
+			$message = apply_filters('subsribr_from_name', $message);
+
+			wp_mail($to, $email_subject, $message, $headers);
 		}
 
 		/**
@@ -467,17 +519,17 @@ if(!class_exists("Subscribr")) :
 				// all WP term related functions have `taxonomy` as a required param
 				// in this case we don't know the taxonomy so we have to look it up
 
-				// loop through user enabled terms
+				// 1. loop through user enabled terms
 				foreach($enabled_terms as $term) {
 
-					// loop through all taxonomies
+					// 2. loop through all taxonomies
 					foreach($all_taxonomies as $tax) {
 
-						// check if the term exists in each taxonomy
+						// 3. check if the term exists in each taxonomy
 						$term_result = term_exists($term, $tax);
 						if(!empty($term_result) && !is_a($term_result, 'WP_Error')) {
 
-							// if so, add it to our array
+							// 4. if so, add it to our array
 							$term_meta = get_term($term_result['term_id'], $tax, ARRAY_A);
 							$enabled_taxonomies[] = $term_meta['taxonomy'];
 						}
@@ -505,6 +557,75 @@ if(!class_exists("Subscribr")) :
 		}
 
 		/**
+		 * Replaces certain user and blog variables in $input string.
+		 *
+		 * Based on code from the Theme My Login plugin.
+		 *
+		 * @since  0.1
+		 * @access public
+		 *
+		 *
+		 * @param string     $input_str          The input string
+		 * @param int|string $post_id            The post ID
+		 * @param int|string $user_id            User ID to replace user specific variables
+		 * @param array      $replacements       Misc variables => values replacements
+		 *
+		 * @return string The $input string with variables replaced
+		 */
+		public function merge_user_vars($input_str, $post_id = 0, $user_id = '', $replacements = array()) {
+			$defaults = array(
+				'%post_title%'          => get_the_title($post_id),
+				'%post_date%'           => get_post($post_id)->post_date,
+				'%post_excerpt%'        => wp_trim_words(get_post($post_id)->post_content, $num_words = 55, $more = NULL),
+				'%permalink%'           => get_permalink($post_id),
+				'%site_name%'           => get_bloginfo('name'),
+				'%site_url%'            => get_home_url(),
+				'%notification_label%'  => self::get_option('notification_label'),
+				'%notifications_label%' => self::get_option('notifications_label'),
+				'%profile_url%'         => admin_url('profile.php'),
+				'%user_ip%'             => $_SERVER['REMOTE_ADDR']
+			);
+			$replacements = wp_parse_args($replacements, $defaults);
+
+			// Get user data
+			$user = FALSE;
+			if($user_id) {
+				$user = get_user_by('id', $user_id);
+			}
+
+			// Get all matches ($matches[0] will be '%value%'; $matches[1] will be 'value')
+			preg_match_all('/%([a-zA-Z0-9-_]*)%/', $input_str, $matches);
+
+			// Iterate through matches
+			foreach($matches[0] as $key => $match) {
+				if(!isset($replacements[$match])) {
+					if($user && isset($user->{$matches[1][$key]})) {
+						// Replacement from WP_User object
+						$replacements[$match] = $user->{$matches[1][$key]};
+					} else {
+						// Replacement from get_bloginfo()
+						$replacements[$match] = get_bloginfo($matches[1][$key]);
+					}
+				}
+			}
+
+			// Allow replacements to be filtered
+			$replacements = apply_filters('subscribr_replace_vars', $replacements, $user_id);
+
+			if(empty($replacements)) {
+				return $input_str;
+			}
+
+			// Get search values
+			$search = array_keys($replacements);
+
+			// Get replacement values
+			$replace = array_values($replacements);
+
+			return str_replace($search, $replace, $input_str);
+		}
+
+		/**
 		 *
 		 * Retrieve an option from the options array.
 		 *
@@ -528,6 +649,12 @@ if(!class_exists("Subscribr")) :
 			} else {
 				return FALSE;
 			}
+		}
+
+		/**
+		 * @return bool
+		 */
+		public function subscription_form() {
 		}
 
 		/**

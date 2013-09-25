@@ -122,6 +122,15 @@ if(!class_exists('mindshare_options_framework')) :
 		protected $project_name;
 
 		/**
+		 * User defined plugin or theme slug
+		 *
+		 * @access protected
+		 * @var array
+		 * @since  0.1
+		 */
+		protected $project_slug;
+
+		/**
 		 * User defined plugin or theme path
 		 *
 		 * @access protected
@@ -313,10 +322,15 @@ if(!class_exists('mindshare_options_framework')) :
 			// Assign page values to local variables and add it's missed values.
 			$this->_Page_Config = $this->args;
 			$this->_fields = & $this->_Page_Config['fields'];
+
 			if(isset($this->args['project_name'])) {
 				$this->project_name = $this->args['project_name'];
 			} else {
 				$this->project_name = 'this';
+			}
+
+			if(isset($this->args['project_slug'])) {
+				$this->project_slug = $this->args['project_slug'];
 			}
 
 			$this->add_missed_values();
@@ -636,7 +650,15 @@ if(!class_exists('mindshare_options_framework')) :
 				<div class="updated">
 					<p>All options have been removed from the database.
 						<?php if($this->project_path == 'PLUGIN') : ?>
-							To complete the uninstall <a href="plugins.php">deactivate <?php echo $this->project_name ?>.</a>
+							<?php
+							if(!empty($this->project_slug)) {
+							$deactivate_url = 'plugins.php?action=deactivate&amp;plugin='.$this->project_slug.'/'.$this->project_slug.'.php';
+							$deactivate_url = wp_nonce_url($deactivate_url, 'deactivate-plugin_'.$this->project_slug.'/'.$this->project_slug.'.php');
+							} else {
+								$deactivate_url = admin_url('plugins.php');
+							}
+							?>
+							To complete the uninstall <a href="<?php echo $deactivate_url; ?>">deactivate <?php echo $this->project_name ?>.</a>
 						<?php elseif($this->project_path == 'THEME') : ?>
 							To complete the uninstall <a href="themes.php">deactivate <?php echo $this->project_name ?>.</a>
 						<?php endif; ?>
@@ -4067,10 +4089,10 @@ if(!class_exists('Mindshare_Validator')) :
 		 * Sanitize and validate user input based on field id
 		 *
 		 * sanitize_by_id() checks the field id for the suffixes:
-		 * '_url' or '_uri' : validates URLs
-		 * '_txt' : validates text fields and text areas
-		 * '_email' or 'email' : validates email addresses
-		 * '_slug' : validates input as a "slug", removing special characters, spaces, etc.
+		 * '__url' or '__uri' : validates URLs
+		 * '__txt' : validates text fields and text areas
+		 * '__email' or 'email' : validates email addresses
+		 * '__slug' : validates input as a "slug", removing special characters, spaces, etc.
 		 *
 		 * @param $field array field array
 		 *
@@ -4080,13 +4102,13 @@ if(!class_exists('Mindshare_Validator')) :
 		 */
 		private static function sanitize_by_id($field, $new_value) {
 
-			if(stristr($field['id'], '_txt')) {
+			if(stristr($field['id'], '__txt')) {
 				$new_value = self::txt($new_value);
-			} elseif(stristr($field['id'], '_uri') || stristr($field['id'], '_url')) {
+			} elseif(stristr($field['id'], '__uri') || stristr($field['id'], '__url')) {
 				$new_value = self::uri($new_value);
-			} elseif(stristr($field['id'], 'email')) {
+			} elseif(stristr($field['id'], '__email')) {
 				$new_value = self::email($new_value);
-			} elseif(stristr($field['id'], '_slug')) {
+			} elseif(stristr($field['id'], '__slug')) {
 				$new_value = self::slug($new_value);
 			}
 

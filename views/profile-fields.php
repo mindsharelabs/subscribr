@@ -22,16 +22,16 @@ if(!is_array($enabled_taxonomies)) {
 $subscribed_terms = get_user_meta(get_current_user_id(), 'subscribr-terms', TRUE);
 $subscribr_pause = get_user_meta(get_current_user_id(), 'subscribr-pause', TRUE);
 $subscribr_unsubscribe = get_user_meta(get_current_user_id(), 'subscribr-unsubscribe', TRUE);
-$notification_label_plural = $this->get_option('notification_label_plural');
+$notifications_label = $this->get_option('notifications_label');
 
-echo apply_filters('subscribr_profile_title', '<h3 class="'.SUBSCRIBR_PLUGIN_SLUG.'">'.__('Update ', 'subscribr').$notification_label_plural.__(' via email', 'subscribr').'</h3>');
+echo apply_filters('subscribr_profile_title', '<h3 class="'.SUBSCRIBR_PLUGIN_SLUG.'">'.__('Update ', 'subscribr').$notifications_label.__(' via email', 'subscribr').'</h3>');
 echo apply_filters('subscribr_profile_table_open', '<table class="form-table '.SUBSCRIBR_PLUGIN_SLUG.'">');
 ?>
 
 	<tbody>
 	<tr id="subscribr" class="form-field field field_type-checkbox">
 		<th valign="top" scope="row">
-			<label for="subscribr-terms"><?php echo apply_filters('subscribr_profile_subscribed_terms_label', __('Your ', 'subscribr').$notification_label_plural); ?></label></th>
+			<label for="subscribr-terms"><?php echo apply_filters('subscribr_profile_subscribed_terms_label', __('Your ', 'subscribr').$notifications_label); ?></label></th>
 		<td>
 			<div id="subscribr-terms-container">
 				<select name="subscribr-terms[]" id="subscribr-terms" class="chosen-select" multiple="multiple">
@@ -47,22 +47,22 @@ echo apply_filters('subscribr_profile_table_open', '<table class="form-table '.S
 					<?php endforeach; // end taxonomy loop ?>
 				</select>
 			</div>
-			<p class="description"><?php echo apply_filters('subscribr_profile_subscribed_terms_description', __('Choose from the terms above to enable email ', 'subscribr') .$notification_label_plural. __('when new posts are published.', 'subscribr')); ?></p>
+			<p class="description"><?php echo apply_filters('subscribr_profile_subscribed_terms_description', __('Choose from the terms above to enable email ', 'subscribr') .$notifications_label. __('when new posts are published.', 'subscribr')); ?></p>
 		</td>
 	</tr>
 	<tr class="hidden-on-singup">
-		<th scope="row"><?php _e('Pause ', 'subscribr'); echo $notification_label_plural; ?></th>
+		<th scope="row"><?php _e('Pause ', 'subscribr'); echo $notifications_label; ?></th>
 		<td>
 			<label for="subscribr-pause">
-				<input name="subscribr-pause" type="checkbox" id="subscribr-pause" value="1" <?php checked($subscribr_pause, 1); ?>> <?php _e('Temporarily stop all ', 'subscribr'); echo $notification_label_plural; ?>
+				<input name="subscribr-pause" type="checkbox" id="subscribr-pause" value="1" <?php checked($subscribr_pause, 1); ?>> <?php _e('Temporarily stop all ', 'subscribr'); echo $notifications_label; ?>
 			</label>
 		</td>
 	</tr>
 	<tr class="hidden-on-singup">
-		<th scope="row"><?php _e('Unsubscribe from all ', 'subscribr'); echo $notification_label_plural; ?></th>
+		<th scope="row"><?php _e('Unsubscribe from all ', 'subscribr'); echo $notifications_label; ?></th>
 		<td>
 			<label for="subscribr-unsubscribe">
-				<input name="subscribr-unsubscribe" type="checkbox" id="subscribr-unsubscribe" value="1" <?php checked($subscribr_unsubscribe, 1); ?>> <?php _e('Remove preferences and stop all ', 'subscribr'); echo $notification_label_plural.'.'; ?>
+				<input name="subscribr-unsubscribe" type="checkbox" id="subscribr-unsubscribe" value="1" <?php checked($subscribr_unsubscribe, 1); ?>> <?php _e('Remove preferences and stop all ', 'subscribr'); echo $notifications_label.'.'; ?>
 			</label>
 		</td>
 	</tr>
