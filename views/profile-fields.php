@@ -14,6 +14,7 @@
 
 // determine what taxonomies are enabled for email notification, if any
 $enabled_taxonomies = $this->get_enabled_taxonomies();
+
 if(!is_array($enabled_taxonomies)) {
 	// no terms are enabled, exit now
 	return;
@@ -24,7 +25,7 @@ $subscribr_pause = get_user_meta(get_current_user_id(), 'subscribr-pause', TRUE)
 $subscribr_unsubscribe = get_user_meta(get_current_user_id(), 'subscribr-unsubscribe', TRUE);
 $notifications_label = $this->get_option('notifications_label');
 
-echo apply_filters('subscribr_profile_title', sprintf(__('<h3 class="%2$s">Update %1$s via email</h3>', 'subscribr'), $notifications_label, SUBSCRIBR_PLUGIN_SLUG));
+echo apply_filters('subscribr_profile_title', sprintf(__('<h3 class="%2$s">Get %1$s via email</h3>', 'subscribr'), $notifications_label, SUBSCRIBR_PLUGIN_SLUG));
 echo apply_filters('subscribr_profile_table_open', '<table class="form-table '.SUBSCRIBR_PLUGIN_SLUG.'">');
 wp_nonce_field('subscribr_inner_custom_box', 'subscribr_inner_custom_box_nonce');
 ?>
@@ -41,9 +42,9 @@ wp_nonce_field('subscribr_inner_custom_box', 'subscribr_inner_custom_box_nonce')
 						<?php $terms = get_terms($taxonomy, array('hide_empty' => FALSE)); ?>
 						<optgroup label="<?php $taxonomy_object = get_taxonomy($taxonomy);
 						echo $taxonomy_object->labels->name; ?>">
-							<?php foreach($terms as $term) : ?>
+							<?php foreach($terms as $term) : if($term->slug != 'uncategorized') : ?>
 								<option <?php if($subscribed_terms && in_array($term->slug, $subscribed_terms)) : echo 'selected'; endif; ?> value="<?php echo $term->slug; ?>"><?php echo $term->name; ?></option>
-							<?php endforeach; // end term loop ?>
+							<?php endif; endforeach; // end term loop ?>
 						</optgroup>
 					<?php endforeach; // end taxonomy loop ?>
 				</select>
@@ -52,7 +53,7 @@ wp_nonce_field('subscribr_inner_custom_box', 'subscribr_inner_custom_box_nonce')
 		</td>
 	</tr>
 	<tr class="hidden-on-singup">
-		<th scope="row"><?php echo sprintf(__('Pause %s', 'subscribr'), $notifications_label); ?></th>
+		<th scope="row"><label><?php echo sprintf(__('Pause %s', 'subscribr'), $notifications_label); ?></label></th>
 		<td>
 			<label for="subscribr-pause">
 				<input name="subscribr-pause" type="checkbox" id="subscribr-pause" value="1" <?php checked($subscribr_pause, 1); ?>> <?php echo sprintf(__('Temporarily stop all %s', 'subscribr'), $notifications_label); ?>
@@ -60,7 +61,7 @@ wp_nonce_field('subscribr_inner_custom_box', 'subscribr_inner_custom_box_nonce')
 		</td>
 	</tr>
 	<tr class="hidden-on-singup">
-		<th scope="row"><?php echo sprintf(__('Unsubscribe from all %s', 'subscribr'), $notifications_label); ?></th>
+		<th scope="row"><label><?php echo sprintf(__('Unsubscribe from all %s', 'subscribr'), $notifications_label); ?></label></th>
 		<td>
 			<label for="subscribr-unsubscribe">
 				<input name="subscribr-unsubscribe" type="checkbox" id="subscribr-unsubscribe" value="1" <?php checked($subscribr_unsubscribe, 1); ?>> <?php echo sprintf(__('Remove preferences and stop all %s.', 'subscribr'), $notifications_label); ?>

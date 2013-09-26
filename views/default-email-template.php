@@ -12,7 +12,7 @@
 
 $email_body = "
 
-A new post is available on %site_name%:
+A new post matching one of your %notifications_label% is available on %site_name%:
 
 %post_title%  (%post_date%)
 
@@ -26,5 +26,3 @@ Manage your %notifications_label% or unsubscribe here: %profile_url%
 ---------------------------------------
 
 - The %site_name% Team";
-
-

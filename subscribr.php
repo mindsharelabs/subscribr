@@ -144,9 +144,6 @@ if(!class_exists("Subscribr")) :
 			if(is_admin()) {
 				add_action('subscribr_post_defaults', array($this, 'add_out_out_meta_box'));
 			}
-
-			// action to send emails
-			add_action('publish_post', array($this, 'queue_notifications'));
 		}
 
 		/**
@@ -189,11 +186,11 @@ if(!class_exists("Subscribr")) :
 					'deps'   => array('jquery')
 				);
 
-				/*$scripts[] = array(
+				$scripts[] = array(
 					'handle' => 'subscribr',
 					'src'    => SUBSCRIBR_DIR_URL.'js/main.js',
 					'deps'   => array('jquery')
-				);*/
+				);
 
 				foreach($scripts as $script) {
 					wp_enqueue_script($script['handle'], $script['src'], $script['deps'], $this->version);
@@ -219,17 +216,12 @@ if(!class_exists("Subscribr")) :
 			if($this->do_scripts()) {
 				?>
 				<script type="text/javascript">
-					jQuery.noConflict();
-					jQuery(document).ready(function() {
-						emailSubscribeInit();
-					});
-
 					function emailSubscribeInit() {
 						jQuery('.chosen-select').chosen({
 							search_contains:           true,
 							width:                     '100%',
-							placeholder_text_multiple: 'Select Email Subscriptions',
-							no_results_text:           'No results'
+							placeholder_text_multiple: '<?php echo apply_filters('subscribr_terms_search_placeholder', sprintf(__('Select or search for %s', 'subscribr'), $this->get_option('notifications_label'))); ?>',
+							no_results_text:           '<?php echo apply_filters('subscribr_terms_search_no_results', __('No results', 'subscribr')); ?>'
 						});
 					}
 				</script>
@@ -273,8 +265,8 @@ if(!class_exists("Subscribr")) :
 			include_once('views/options-page.php');
 
 			// load existing options
-			include_once('controllers/options-init.php');
 			$this->options = get_option(SUBSCRIBR_OPTIONS);
+			include_once('controllers/options-init.php');
 			new subscribr_options($this->options);
 		}
 
@@ -344,15 +336,20 @@ if(!class_exists("Subscribr")) :
 		 */
 		public function queue_notifications($post_id) {
 
-			if(isset($_POST['subscribr_opt_out']) && $_POST['subscribr_opt_out'] != 1) {
+			// different WP hooks will send either the post ID or the actual post object, so we need to test for both cases
+			if(is_a($post_id, 'WP_Post')) {
+				$post_id = $post_id->ID;
+			}
+
+			if(!isset($_POST['subscribr_opt_out'])) {
 				if(!wp_is_post_revision($post_id)) {
 
 					$post = get_post($post_id);
 
-					// quit if post has been published already @todo uncomment after testing
-					/*if($post->post_date != $post->post_modified) {
+					// quit if post has been published already
+					if($post->post_date != $post->post_modified) {
 						return;
-					}*/
+					}
 
 					// query users with active notification preferences
 					$active_user_ids = new WP_User_Query(
@@ -416,7 +413,7 @@ if(!class_exists("Subscribr")) :
 						do_action('subscribr_pre_user_query', $post); // likely the best spot to plugin other types of notifications (SMS, etc)
 
 						// email notifications
-						if($this->get_option('enable_email_notifications')) {
+						if($this->get_option('enable_mail_notifications')) {
 
 							// test for public post statuses, this allows for custom statuses as well as the default 'publish'
 							$post_status = get_post_status_object(get_post_status($post_id));
@@ -425,6 +422,7 @@ if(!class_exists("Subscribr")) :
 							}
 						}
 
+						// add other notification methods here
 						do_action('subscribr_post_user_query');
 					} else {
 
@@ -462,18 +460,18 @@ if(!class_exists("Subscribr")) :
 			$from_email = apply_filters('subscribr_from_email', $this->get_option('from_email'));
 			$from = $from_name.' <'.$from_email.'>';
 
-			$email_subject = $this->get_option('email_subject');
-			$email_subject = $this->merge_user_vars($email_subject, $post_id, $user_id);
-			$email_subject = apply_filters('subscribr_$email_subject', $email_subject);
+			$mail_subject = $this->get_option('mail_subject');
+			$mail_subject = $this->merge_user_vars($mail_subject, $post_id, $user_id);
+			$mail_subject = apply_filters('subscribr_mail_subject', $mail_subject);
 
 			$headers[] = 'From: '.$from;
 			//$headers[] = 'Content-type: text/html'; @todo
 
 			$message = $this->get_option('email_body');
 			$message = $this->merge_user_vars($message, $post_id, $user_id);
-			$message = apply_filters('subsribr_from_name', $message);
+			$message = apply_filters('subsribr_email_body', $message);
 
-			wp_mail($to, $email_subject, $message, $headers);
+			wp_mail($to, $mail_subject, $message, $headers);
 		}
 
 		/**
@@ -562,7 +560,9 @@ if(!class_exists("Subscribr")) :
 		 */
 		public function get_default_taxonomies() {
 			$taxonomies = get_taxonomies();
-			$disabled_taxonomies = array('nav_menu', 'post_format', 'link_category');
+			$disabled_taxonomies = array('post_status', 'nav_menu', 'post_format', 'link_category');
+			$disabled_taxonomies = apply_filters('subscribr_disabled_taxonomies', $disabled_taxonomies);
+
 			$taxonomies = array_diff($taxonomies, $disabled_taxonomies);
 			return $taxonomies;
 		}
@@ -660,12 +660,6 @@ if(!class_exists("Subscribr")) :
 			} else {
 				return FALSE;
 			}
-		}
-
-		/**
-		 * @return bool
-		 */
-		public function subscription_form() {
 		}
 
 		/**

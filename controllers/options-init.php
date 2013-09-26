@@ -35,8 +35,8 @@ if(!class_exists('subscribr_options')) :
 
 			$option_changed = FALSE;
 
-			if(!array_key_exists('enable_email_notifications', $this->options)) {
-				$this->options['enable_email_notifications'] = apply_filters('subscribr_default_enable_email_notifications', TRUE);
+			if(!array_key_exists('enable_mail_notifications', $this->options)) {
+				$this->options['enable_mail_notifications'] = apply_filters('subscribr_default_enable_mail_notifications', TRUE);
 				$option_changed = TRUE;
 			}
 			if(!array_key_exists('show_on_profile', $this->options)) {
@@ -74,10 +74,20 @@ if(!class_exists('subscribr_options')) :
 				$option_changed = TRUE;
 			}
 
+			if(!array_key_exists('trigger_action', $this->options)) {
+				$this->options['trigger_action'] = apply_filters('subscribr_default_trigger_action', __('publish_post', 'subscribr'));
+				$option_changed = TRUE;
+			}
+
 			if(!array_key_exists('email_body', $this->options)) {
 				// import the default template $email_body
 				include(SUBSCRIBR_DIR_PATH.'/views/default-email-template.php');
 				$this->options['email_body'] = apply_filters('subscribr_default_email_body', $email_body);
+				$option_changed = TRUE;
+			}
+
+			if(!array_key_exists('mail_subject', $this->options)) {
+				$this->options['mail_subject'] = apply_filters('subscribr_default_email_body', __('A notification from %sitename%', 'subscribr'));
 				$option_changed = TRUE;
 			}
 
@@ -95,6 +105,16 @@ if(!class_exists('subscribr_options')) :
 		 *
 		 */
 		public function apply_options() {
+
+			// action to send emails
+			$trigger_action = $this->options['trigger_action'];
+			$trigger_action = preg_replace('/\s+/', '', $trigger_action); // strip whitespace
+			$trigger_action = explode(',', $trigger_action); // split on commas
+
+			// add the actions
+			foreach($trigger_action as $hook) {
+				add_action($hook, array($this, 'queue_notifications'));
+			}
 
 			if($this->options['show_on_profile']) {
 

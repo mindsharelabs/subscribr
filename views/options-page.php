@@ -9,7 +9,7 @@
  *
  */
 
-$subscribr_options = new mindshare_options_framework(
+$subscribr_options = new subscribr_options_framework(
 	array(
 		 'project_name' => SUBSCRIBR_PLUGIN_NAME,
 		 'project_slug' => SUBSCRIBR_PLUGIN_SLUG,
@@ -57,7 +57,7 @@ $subscribr_options->OpenTab($subscribr_tabs_keys[0]);
 $subscribr_options->Title($subscribr_tabs[$subscribr_tabs_keys[0]]);
 
 $subscribr_options->addCheckbox(
-	'enable_email_notifications',
+	'enable_mail_notifications',
 	array(
 		 'name' => __('Enable Email notifications', 'subscribr'),
 		 'std'  => TRUE,
@@ -84,7 +84,7 @@ $subscribr_options->addText(
 );
 
 $subscribr_options->addText(
-	'email_subject',
+	'mail_subject',
 	array(
 		 'name' => __('Email subject', 'subscribr'),
 		 'std'  => __('A notification from %sitename%', 'subscribr'),
@@ -175,6 +175,15 @@ $subscribr_options->addText(
 		 'name' => __('Notification Label Plural', 'subscribr'),
 		 'std'  => __('notifications', 'subscribr'),
 		 'desc' => __('Enter the terminology to use for plural "notifications". E.g. "alerts", "subscriptions", "notifications", etc.', 'subscribr')
+	)
+);
+
+$subscribr_options->addText(
+	'trigger_action',
+	array(
+		 'name' => __('WordPress action to trigger notifications', 'subscribr'),
+		 'std'  => 'publish_post',
+		 'desc' => __('This option allows you to override the default WordPress hook used to trigger notifications. Separate multiple action names with commas. Default: <code><a href="http://codex.wordpress.org/Plugin_API/Action_Reference" target="_blank" title="Action Reference">publish_post</a></code>', 'subscribr')
 	)
 );
 

@@ -40,8 +40,8 @@
  * @todo           change case of vars to match mindshare standard
  *
  */
-if(!class_exists('mindshare_options_framework')) :
-	class mindshare_options_framework {
+if(!class_exists('subscribr_options_framework')) :
+	class subscribr_options_framework {
 
 		/**
 		 * The MOF version number.
@@ -4091,7 +4091,7 @@ if(!class_exists('Mindshare_Validator')) :
 		 * sanitize_by_id() checks the field id for the suffixes:
 		 * '__url' or '__uri' : validates URLs
 		 * '__txt' : validates text fields and text areas
-		 * '__email' or 'email' : validates email addresses
+		 * '__email' : validates email addresses
 		 * '__slug' : validates input as a "slug", removing special characters, spaces, etc.
 		 *
 		 * @param $field array field array
