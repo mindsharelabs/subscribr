@@ -34,10 +34,8 @@ Domain Path: /lang
  * ToDo List:
  *
  * @todo      - add widget
- * @todo      - finish default email template file
+ * @todo      - add option to post notifications for update as well as new posts
  * @todo      - add double opt-in
- * @todo      - add opt out option for individual posts (for authors)
- * @todo      - finish internationalizing
  * @todo      - add html/plain text options
  * @todo      - add scheduling options / digest mode
  * @todo      - add analytics options... talk to Bryce about this
@@ -120,7 +118,7 @@ if(!class_exists("Subscribr")) :
 		/**
 		 * @var $options - holds all plugin options
 		 */
-		protected $options;
+		public $options;
 
 		/**
 		 * Initialize the plugin. Set up actions / filters.
@@ -142,9 +140,13 @@ if(!class_exists("Subscribr")) :
 			// action links
 			add_filter('plugin_action_links', array($this, 'plugin_action_links'), 10, 2);
 
+			// add meta box
+			if(is_admin()) {
+				add_action('subscribr_post_defaults', array($this, 'add_out_out_meta_box'));
+			}
+
 			// action to send emails
 			add_action('publish_post', array($this, 'queue_notifications'));
-			//$this->notification_send(2); debugging
 		}
 
 		/**
@@ -162,6 +164,12 @@ if(!class_exists("Subscribr")) :
 		 */
 		public function load_textdomain() {
 			load_plugin_textdomain('subscribr', FALSE, SUBSCRIBR_PLUGIN_SLUG);
+		}
+
+		public function add_out_out_meta_box() {
+
+			include_once('views/meta-box.php');
+			new opt_out_meta_box($this->options);
 		}
 
 		/**
@@ -286,7 +294,8 @@ if(!class_exists("Subscribr")) :
 		 */
 		public function update_user_meta($user_id) {
 
-			if(!(current_user_can('edit_user', $user_id) || $_POST["wp-submit"] == "Register")) { // @todo add nonce?
+			// Check if our nonce is set and valid
+			if(!(current_user_can('edit_user', $user_id) || (!isset($_POST['subscribr_update_user_meta_nonce']) || !wp_verify_nonce($_POST['subscribr_update_user_meta_nonce'], 'subscribr_update_user_meta')))) {
 				return FALSE;
 			}
 
@@ -335,91 +344,93 @@ if(!class_exists("Subscribr")) :
 		 */
 		public function queue_notifications($post_id) {
 
-			if(!wp_is_post_revision($post_id)) {
+			if(isset($_POST['subscribr_opt_out']) && $_POST['subscribr_opt_out'] != 1) {
+				if(!wp_is_post_revision($post_id)) {
 
-				$post = get_post($post_id);
+					$post = get_post($post_id);
 
-				// quit if post has been published already @todo uncomment after testing
-				/*if($post->post_date != $post->post_modified) {
-					return;
-				}*/
+					// quit if post has been published already @todo uncomment after testing
+					/*if($post->post_date != $post->post_modified) {
+						return;
+					}*/
 
-				// query users with active notification preferences
-				$active_user_ids = new WP_User_Query(
-					array(
-						 'fields'     => 'id',
-						 //'fields' => 'all_with_meta',
-						 // check for any subscribed terms
-						 'meta_query' => array(
-							 array(
-								 'key'     => 'subscribr-terms',
-								 'value'   => '',
-								 'compare' => '!='
-							 ),
-							 // make sure notifications are not disabled or paused
-							 array(
-								 'key'     => 'subscribr-pause',
-								 'value'   => 1,
-								 'compare' => '!='
-							 ),
-							 array(
-								 'key'     => 'subscribr-unsubscribe',
-								 'value'   => 1,
-								 'compare' => '!='
+					// query users with active notification preferences
+					$active_user_ids = new WP_User_Query(
+						array(
+							 'fields'     => 'id',
+							 //'fields' => 'all_with_meta',
+							 // check for any subscribed terms
+							 'meta_query' => array(
+								 array(
+									 'key'     => 'subscribr-terms',
+									 'value'   => '',
+									 'compare' => '!='
+								 ),
+								 // make sure notifications are not disabled or paused
+								 array(
+									 'key'     => 'subscribr-pause',
+									 'value'   => 1,
+									 'compare' => '!='
+								 ),
+								 array(
+									 'key'     => 'subscribr-unsubscribe',
+									 'value'   => 1,
+									 'compare' => '!='
+								 )
 							 )
-						 )
-					)
-				);
+						)
+					);
 
-				// grab the terms (as an array instead of an object)
-				$post_terms = json_decode(json_encode(wp_get_object_terms($post_id, $this->get_enabled_taxonomies())), TRUE);
+					// grab the terms (as an array instead of an object)
+					$post_terms = json_decode(json_encode(wp_get_object_terms($post_id, $this->get_enabled_taxonomies())), TRUE);
 
-				// array to hold matched users
-				$notify_user_ids = array();
+					// array to hold matched users
+					$notify_user_ids = array();
 
-				// 1. loop through the subscribed users
-				foreach($active_user_ids->results as $user_id) {
-					$user_id = intval($user_id); // data type correction
-					$subscribr_terms = get_user_meta($user_id, 'subscribr-terms', TRUE);
-					if(is_array($subscribr_terms)) {
+					// 1. loop through the subscribed users
+					foreach($active_user_ids->results as $user_id) {
+						$user_id = intval($user_id); // data type correction
+						$subscribr_terms = get_user_meta($user_id, 'subscribr-terms', TRUE);
+						if(is_array($subscribr_terms)) {
 
-						// 2. loop through the subscribed terms
-						foreach($subscribr_terms as $term) {
+							// 2. loop through the subscribed terms
+							foreach($subscribr_terms as $term) {
 
-							// 3. loop through the post terms to test for a match
-							foreach($post_terms as $post_term) {
-								if($post_term['slug'] == $term) {
+								// 3. loop through the post terms to test for a match
+								foreach($post_terms as $post_term) {
+									if($post_term['slug'] == $term) {
 
-									// 4. we've got a match, add the user to the notify array
-									$notify_user_ids[] = $user_id;
+										// 4. we've got a match, add the user to the notify array
+										$notify_user_ids[] = $user_id;
+									}
 								}
 							}
 						}
 					}
-				}
 
-				// remove duplicates so we don't send mail more than once!
-				$notify_user_ids = array_unique($notify_user_ids, SORT_NUMERIC);
+					// remove duplicates so we don't send mail more than once!
+					$notify_user_ids = array_unique($notify_user_ids, SORT_NUMERIC);
 
-				if(!empty($notify_user_ids)) {
+					if(!empty($notify_user_ids)) {
 
-					do_action('subscribr_pre_user_query', $post); // likely the best spot to plugin other types of notifications (SMS, etc)
+						do_action('subscribr_pre_user_query', $post); // likely the best spot to plugin other types of notifications (SMS, etc)
 
-					// email notifications
-					if($this->get_option('enable_email_notifications')) {
+						// email notifications
+						if($this->get_option('enable_email_notifications')) {
 
-						// test for public post statuses, this allows for custom statuses as well as the default 'publish'
-						$post_status = get_post_status_object(get_post_status($post_id));
-						if($post_status->public) {
-							$this->notification_send($post_id, $user_id);
+							// test for public post statuses, this allows for custom statuses as well as the default 'publish'
+							$post_status = get_post_status_object(get_post_status($post_id));
+							if($post_status->public) {
+								$this->notification_send($post_id, $user_id);
+							}
 						}
+
+						do_action('subscribr_post_user_query');
+					} else {
+
+						// no matches
+						do_action('subscribr_empty_user_query');
 					}
-
-					do_action('subscribr_post_user_query');
-				} else {
-
-					// no matches
-					do_action('subscribr_empty_user_query');
 				}
 			}
 		}

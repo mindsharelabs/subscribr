@@ -12,11 +12,6 @@
 if(!class_exists('subscribr_options')) :
 	class subscribr_options extends Subscribr {
 
-		/**
-		 * @var        $options - holds all plugin options
-		 */
-		protected $options;
-
 		public function __construct($options) {
 
 			$this->options = $options;
@@ -86,11 +81,13 @@ if(!class_exists('subscribr_options')) :
 				$option_changed = TRUE;
 			}
 
-			do_action('subscribr_defaults');
+			do_action('subscribr_pre_defaults');
 
 			if($option_changed) {
 				$this->save_options();
 			}
+
+			do_action('subscribr_post_defaults');
 		}
 
 		/**
@@ -123,7 +120,5 @@ if(!class_exists('subscribr_options')) :
 		public function save_options() {
 			update_option(SUBSCRIBR_OPTIONS, $this->options);
 		}
-
-
 	}
 endif;

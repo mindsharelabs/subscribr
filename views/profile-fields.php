@@ -24,14 +24,15 @@ $subscribr_pause = get_user_meta(get_current_user_id(), 'subscribr-pause', TRUE)
 $subscribr_unsubscribe = get_user_meta(get_current_user_id(), 'subscribr-unsubscribe', TRUE);
 $notifications_label = $this->get_option('notifications_label');
 
-echo apply_filters('subscribr_profile_title', '<h3 class="'.SUBSCRIBR_PLUGIN_SLUG.'">'.__('Update ', 'subscribr').$notifications_label.__(' via email', 'subscribr').'</h3>');
+echo apply_filters('subscribr_profile_title', sprintf(__('<h3 class="%2$s">Update %1$s via email</h3>', 'subscribr'), $notifications_label, SUBSCRIBR_PLUGIN_SLUG));
 echo apply_filters('subscribr_profile_table_open', '<table class="form-table '.SUBSCRIBR_PLUGIN_SLUG.'">');
+wp_nonce_field('subscribr_inner_custom_box', 'subscribr_inner_custom_box_nonce');
 ?>
 
 	<tbody>
 	<tr id="subscribr" class="form-field field field_type-checkbox">
 		<th valign="top" scope="row">
-			<label for="subscribr-terms"><?php echo apply_filters('subscribr_profile_subscribed_terms_label', __('Your ', 'subscribr').$notifications_label); ?></label></th>
+			<label for="subscribr-terms"><?php echo apply_filters('subscribr_profile_subscribed_terms_label', sprintf(__('Your %s', 'subscribr'), $notifications_label)); ?></label></th>
 		<td>
 			<div id="subscribr-terms-container">
 				<select name="subscribr-terms[]" id="subscribr-terms" class="chosen-select" multiple="multiple">
@@ -47,22 +48,22 @@ echo apply_filters('subscribr_profile_table_open', '<table class="form-table '.S
 					<?php endforeach; // end taxonomy loop ?>
 				</select>
 			</div>
-			<p class="description"><?php echo apply_filters('subscribr_profile_subscribed_terms_description', __('Choose from the terms above to enable email ', 'subscribr') .$notifications_label. __('when new posts are published.', 'subscribr')); ?></p>
+			<p class="description"><?php echo apply_filters('subscribr_profile_subscribed_terms_description', sprintf(__('Choose from the terms above to enable email %s when new posts are published.', 'subscribr'), $notifications_label)); ?></p>
 		</td>
 	</tr>
 	<tr class="hidden-on-singup">
-		<th scope="row"><?php _e('Pause ', 'subscribr'); echo $notifications_label; ?></th>
+		<th scope="row"><?php echo sprintf(__('Pause %s', 'subscribr'), $notifications_label); ?></th>
 		<td>
 			<label for="subscribr-pause">
-				<input name="subscribr-pause" type="checkbox" id="subscribr-pause" value="1" <?php checked($subscribr_pause, 1); ?>> <?php _e('Temporarily stop all ', 'subscribr'); echo $notifications_label; ?>
+				<input name="subscribr-pause" type="checkbox" id="subscribr-pause" value="1" <?php checked($subscribr_pause, 1); ?>> <?php echo sprintf(__('Temporarily stop all %s', 'subscribr'), $notifications_label); ?>
 			</label>
 		</td>
 	</tr>
 	<tr class="hidden-on-singup">
-		<th scope="row"><?php _e('Unsubscribe from all ', 'subscribr'); echo $notifications_label; ?></th>
+		<th scope="row"><?php echo sprintf(__('Unsubscribe from all %s', 'subscribr'), $notifications_label); ?></th>
 		<td>
 			<label for="subscribr-unsubscribe">
-				<input name="subscribr-unsubscribe" type="checkbox" id="subscribr-unsubscribe" value="1" <?php checked($subscribr_unsubscribe, 1); ?>> <?php _e('Remove preferences and stop all ', 'subscribr'); echo $notifications_label.'.'; ?>
+				<input name="subscribr-unsubscribe" type="checkbox" id="subscribr-unsubscribe" value="1" <?php checked($subscribr_unsubscribe, 1); ?>> <?php echo sprintf(__('Remove preferences and stop all %s.', 'subscribr'), $notifications_label); ?>
 			</label>
 		</td>
 	</tr>
