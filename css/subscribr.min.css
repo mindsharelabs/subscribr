@@ -1,4 +1,4 @@
-.login-action-register #login .hidden-on-singup {
+.login-action-register #login .hidden-on-singup, .login .hidden-on-singup {
 	display:none !important;
 }
 .login-action-register #login {
