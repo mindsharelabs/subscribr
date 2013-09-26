@@ -33,7 +33,6 @@ Domain Path: /lang
  *
  * ToDo List:
  *
- * @todo      - fix hidden-on-singup class name
  * @todo      - add widget
  * @todo      - add option to post notifications for update as well as new posts
  * @todo      - add double opt-in

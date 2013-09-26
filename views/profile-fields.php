@@ -52,7 +52,7 @@ wp_nonce_field('subscribr_inner_custom_box', 'subscribr_inner_custom_box_nonce')
 			<p class="description"><?php echo apply_filters('subscribr_profile_subscribed_terms_description', sprintf(__('Choose from the terms above to enable email %s when new posts are published.', 'subscribr'), $notifications_label)); ?></p>
 		</td>
 	</tr>
-	<tr class="hidden-on-singup">
+	<tr class="hidden-on-signup">
 		<th scope="row"><label><?php echo sprintf(__('Pause %s', 'subscribr'), $notifications_label); ?></label></th>
 		<td>
 			<label for="subscribr-pause">
@@ -60,7 +60,7 @@ wp_nonce_field('subscribr_inner_custom_box', 'subscribr_inner_custom_box_nonce')
 			</label>
 		</td>
 	</tr>
-	<tr class="hidden-on-singup">
+	<tr class="hidden-on-signup">
 		<th scope="row"><label><?php echo sprintf(__('Unsubscribe from all %s', 'subscribr'), $notifications_label); ?></label></th>
 		<td>
 			<label for="subscribr-unsubscribe">
