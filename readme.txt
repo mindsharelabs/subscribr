@@ -1,4 +1,4 @@
-=== Email Subscribe ===
+=== Subscribr ===
 Contributors: mindshare
 Donate link: http://mind.sh/are/donate/
 Tags: email, notifications, subscribe, subscriptions, notify, alerts
@@ -8,11 +8,11 @@ Stable tag: trunk
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Allows WordPress users to subscribe to email notifications for new posts, pages, and custom types, filterable by taxonomies.
+Allows WordPress users to subscribe to notifications for new posts, pages, and custom types, filterable by taxonomies.
 
 == Description ==
 
-Allows WordPress users to subscribe to email notifications for new posts, pages, and custom types, filterable by taxonomies.
+Allows WordPress users to subscribe to email notifications for new posts, pages, and custom types, filterable by taxonomies. The plugin supports tons of actions and filters too! Documentation will be coming soon.
 
 == Installation ==
 
