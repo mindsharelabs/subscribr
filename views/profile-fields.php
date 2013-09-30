@@ -12,7 +12,7 @@
  *
  */
 
-echo apply_filters('subscribr_profile_title', sprintf(__('<h3 class="%2$s">Get %1$s via email</h3>', 'subscribr'), $notifications_label, SUBSCRIBR_PLUGIN_SLUG));
+echo apply_filters('subscribr_profile_title', sprintf(__('<h3 id="%2$s-options" class="%2$s">Get %1$s via email</h3>', 'subscribr'), $notifications_label, SUBSCRIBR_PLUGIN_SLUG));
 echo apply_filters('subscribr_profile_table_open', '<table class="form-table '.SUBSCRIBR_PLUGIN_SLUG.'">');
 wp_nonce_field('subscribr_inner_custom_box', 'subscribr_inner_custom_box_nonce');
 ?>

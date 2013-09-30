@@ -3,7 +3,7 @@
 Plugin Name: Subscribr
 Plugin URI: http://mindsharelabs.com/products/
 Description: Allows WordPress users to subscribe to email notifications for new posts, pages, and custom types, filterable by taxonomies.
-Version: 0.1
+Version: 0.1.1
 Author: Mindshare Studios, Inc.
 Author URI: http://mind.sh/are/
 License: GNU General Public License
@@ -33,25 +33,26 @@ Domain Path: /lang
  *
  * ToDo List:
  *
+ * @todo      - add option to separate diff taxonomies on profile update
  * @todo      - add widget
  * @todo      - add option to post notifications for update as well as new posts
- * @todo      - add double opt-in
  * @todo      - add html/plain text options
  * @todo      - add scheduling options / digest mode
- * @todo      - add analytics options... talk to Bryce about this
+ * @todo      - add analytics options
  * @todo      - add minimum role option for notifications
+ * @todo      - add double opt-in
  *
  * Premium features:
  *
+ * @todo      - SMS text messages
+ * @todo      - add integration with 3rd-party SMTP servers and/or advanced SMTP settings
  * @todo      - add integration with MailChimp/Mandrill
- * @todo      - add list management for Roles, use-case wholsale / retail
  * @todo      - add integration with Constant Contact
  * @todo      - add integration with Aweber
- * @todo      - add CSV subscriber export
- * @todo      - SMS text messages
  * @todo      - notification on site (like Facebook)
  * @todo      - add subscriber management to settings
- * @todo      - add integration with 3rd-party SMTP servers and/or advanced SMTP settings
+ * @todo      - add CSV subscriber export
+ * @todo      - add list management for Roles, use-case wholsale / retail
  *
  * Developer Notes:
  *
@@ -60,6 +61,7 @@ Domain Path: /lang
  *
  * Changelog:
  *
+ * 0.1.1 - Minor updates, fixed date_format, fix for only one notification getting sent
  * 0.1 - Initial release
  *
  */
@@ -113,7 +115,7 @@ if(!class_exists("Subscribr")) :
 		 *
 		 * @var string
 		 */
-		private $version = '0.1';
+		private $version = '0.1.1';
 
 		/**
 		 * @var $options - holds all plugin options
@@ -152,7 +154,16 @@ if(!class_exists("Subscribr")) :
 		 * @return string
 		 */
 		public function __toString() {
-			return get_class($this).' '.$this->version;
+			return get_class($this).' '.$this->get_version();
+		}
+
+		/**
+		 * Returns the plugin version number.
+		 *
+		 * @return string
+		 */
+		public function get_version() {
+			return $this->version;
 		}
 
 		/**
@@ -399,7 +410,7 @@ if(!class_exists("Subscribr")) :
 					$notify_user_ids = array();
 
 					// 1. loop through the subscribed users
-					foreach($active_user_ids->results as $user_id) {
+					foreach($active_user_ids->get_results() as $user_id) {
 						$user_id = intval($user_id); // data type correction
 						$subscribr_terms = get_user_meta($user_id, 'subscribr-terms', TRUE);
 						if(is_array($subscribr_terms)) {
@@ -424,20 +435,23 @@ if(!class_exists("Subscribr")) :
 
 					if(!empty($notify_user_ids)) {
 
-						do_action('subscribr_pre_user_query', $post); // likely the best spot to plugin other types of notifications (SMS, etc)
+						foreach($notify_user_ids as $user_id) {
 
-						// email notifications
-						if($this->get_option('enable_mail_notifications')) {
+							do_action('subscribr_pre_user_query', $post, $user_id); // likely the best spot to plugin other types of notifications (SMS, etc)
 
-							// test for public post statuses, this allows for custom statuses as well as the default 'publish'
-							$post_status = get_post_status_object(get_post_status($post_id));
-							if($post_status->public) {
-								$this->notification_send($post_id, $user_id);
+							// email notifications
+							if($this->get_option('enable_mail_notifications')) {
+
+								// test for public post statuses, this allows for custom statuses as well as the default 'publish'
+								$post_status = get_post_status_object(get_post_status($post_id));
+								if($post_status->public) {
+									$this->notification_send($post_id, $user_id);
+								}
 							}
-						}
 
-						// add other notification methods here
-						do_action('subscribr_post_user_query');
+							// add other notification methods here
+							do_action('subscribr_post_user_query');
+						}
 					} else {
 
 						// no matches
@@ -600,7 +614,7 @@ if(!class_exists("Subscribr")) :
 		public function merge_user_vars($input_str, $post_id = 0, $user_id = '', $replacements = array()) {
 			$defaults = array(
 				'%post_title%'          => get_the_title($post_id),
-				'%post_date%'           => get_post($post_id)->post_date,
+				'%post_date%'           => date(get_option('date_format'), strtotime(get_post($post_id)->post_date)),
 				'%post_excerpt%'        => wp_trim_words(get_post($post_id)->post_content, $num_words = 55, $more = NULL),
 				'%permalink%'           => get_permalink($post_id),
 				'%site_name%'           => get_bloginfo('name'),
