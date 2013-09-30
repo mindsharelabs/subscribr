@@ -3,7 +3,7 @@
 Plugin Name: Subscribr
 Plugin URI: http://mindsharelabs.com/products/
 Description: Allows WordPress users to subscribe to email notifications for new posts, pages, and custom types, filterable by taxonomies.
-Version: 0.1.1
+Version: 0.1.2
 Author: Mindshare Studios, Inc.
 Author URI: http://mind.sh/are/
 License: GNU General Public License
@@ -40,6 +40,7 @@ Domain Path: /lang
  * @todo      - add scheduling options / digest mode
  * @todo      - add analytics options
  * @todo      - add minimum role option for notifications
+ * @todo      - add view to see all current subscribers
  * @todo      - add double opt-in
  *
  * Premium features:
@@ -61,6 +62,7 @@ Domain Path: /lang
  *
  * Changelog:
  *
+ * 0.1.2 -
  * 0.1.1 - Minor updates, fixed date_format, fix for only one notification getting sent
  * 0.1 - Initial release
  *
@@ -115,7 +117,7 @@ if(!class_exists("Subscribr")) :
 		 *
 		 * @var string
 		 */
-		private $version = '0.1.1';
+		private $version = '0.1.2';
 
 		/**
 		 * @var $options - holds all plugin options
