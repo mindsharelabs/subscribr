@@ -12,19 +12,6 @@
  *
  */
 
-// determine what taxonomies are enabled for email notification, if any
-$enabled_taxonomies = $this->get_enabled_taxonomies();
-
-if(!is_array($enabled_taxonomies)) {
-	// no terms are enabled, exit now
-	return;
-}
-
-$subscribed_terms = get_user_meta(get_current_user_id(), 'subscribr-terms', TRUE);
-$subscribr_pause = get_user_meta(get_current_user_id(), 'subscribr-pause', TRUE);
-$subscribr_unsubscribe = get_user_meta(get_current_user_id(), 'subscribr-unsubscribe', TRUE);
-$notifications_label = $this->get_option('notifications_label');
-
 echo apply_filters('subscribr_profile_title', sprintf(__('<h3 class="%2$s">Get %1$s via email</h3>', 'subscribr'), $notifications_label, SUBSCRIBR_PLUGIN_SLUG));
 echo apply_filters('subscribr_profile_table_open', '<table class="form-table '.SUBSCRIBR_PLUGIN_SLUG.'">');
 wp_nonce_field('subscribr_inner_custom_box', 'subscribr_inner_custom_box_nonce');

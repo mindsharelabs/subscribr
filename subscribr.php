@@ -231,7 +231,7 @@ if(!class_exists("Subscribr")) :
 
 		public function do_scripts() {
 			// only enqueue if we're on the register screen, user profile, or Theme_My_Login pages (and the options are enabled)
-			if(($this->is_register() && $this->get_option('show_on_register')) || ($this->is_profile() && $this->get_option('show_on_profile')) || (class_exists('Theme_My_Login'))) {
+			if(($this->is_register() && $this->get_option('show_on_register')) || ($this->is_profile() && $this->get_option('show_on_profile')) || (class_exists('Theme_My_Login')) || ($this->is_user_edit() && $this->get_option('show_on_profile'))) {
 				return TRUE;
 			} else {
 				return FALSE;
@@ -276,6 +276,20 @@ if(!class_exists("Subscribr")) :
 		 * @param $user
 		 */
 		public function user_profile_fields($user) {
+
+			// determine what taxonomies are enabled for email notification, if any
+			$enabled_taxonomies = $this->get_enabled_taxonomies();
+
+			if(!is_array($enabled_taxonomies)) {
+				// no terms are enabled, exit now
+				return;
+			}
+
+			$subscribed_terms = get_user_meta($user->ID, 'subscribr-terms', TRUE);
+			$subscribr_pause = get_user_meta($user->ID, 'subscribr-pause', TRUE);
+			$subscribr_unsubscribe = get_user_meta($user->ID, 'subscribr-unsubscribe', TRUE);
+			$notifications_label = $this->get_option('notifications_label');
+
 			include_once('views/profile-fields.php');
 		}
 
@@ -667,6 +681,13 @@ if(!class_exists("Subscribr")) :
 		 */
 		public function is_profile() {
 			return in_array($GLOBALS['pagenow'], array('profile.php'));
+		}
+
+		/**
+		 * @return bool
+		 */
+		public function is_user_edit() {
+			return in_array($GLOBALS['pagenow'], array('user-edit.php'));
 		}
 
 		/**
