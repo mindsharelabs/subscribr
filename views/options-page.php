@@ -93,7 +93,7 @@ $subscribr_options->addText(
 );
 
 $subscribr_options->addCode(
-	'email_body',
+	'mail_body',
 	array(
 		 'type'   => 'code',
 		 'std'    => '',

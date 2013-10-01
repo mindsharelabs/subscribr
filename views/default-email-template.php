@@ -10,7 +10,7 @@
  */
 
 
-$email_body = "
+$mail_body = "
 
 A new post matching one of your %notifications_label% is available on %site_name%:
 

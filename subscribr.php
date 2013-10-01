@@ -62,7 +62,7 @@ Domain Path: /lang
  *
  * Changelog:
  *
- * 0.1.2 -
+ * 0.1.2 - bugfix for subscribr_profile_title filter,
  * 0.1.1 - Minor updates, fixed date_format, fix for only one notification getting sent
  * 0.1 - Initial release
  *
@@ -497,9 +497,9 @@ if(!class_exists("Subscribr")) :
 			$headers[] = 'From: '.$from;
 			//$headers[] = 'Content-type: text/html'; @todo
 
-			$message = $this->get_option('email_body');
+			$message = $this->get_option('mail_body');
 			$message = $this->merge_user_vars($message, $post_id, $user_id);
-			$message = apply_filters('subsribr_email_body', $message);
+			$message = apply_filters('subsribr_mail_body', $message);
 
 			wp_mail($to, $mail_subject, $message, $headers);
 		}

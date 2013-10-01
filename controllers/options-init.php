@@ -79,15 +79,15 @@ if(!class_exists('subscribr_options')) :
 				$option_changed = TRUE;
 			}
 
-			if(!array_key_exists('email_body', $this->options)) {
-				// import the default template $email_body
+			if(!array_key_exists('mail_body', $this->options)) {
+				// import the default template $mail_body
 				include(SUBSCRIBR_DIR_PATH.'/views/default-email-template.php');
-				$this->options['email_body'] = apply_filters('subscribr_default_email_body', $email_body);
+				$this->options['mail_body'] = apply_filters('subscribr_default_mail_body', $mail_body);
 				$option_changed = TRUE;
 			}
 
 			if(!array_key_exists('mail_subject', $this->options)) {
-				$this->options['mail_subject'] = apply_filters('subscribr_default_email_body', __('A notification from %sitename%', 'subscribr'));
+				$this->options['mail_subject'] = apply_filters('subscribr_default_mail_body', __('A notification from %sitename%', 'subscribr'));
 				$option_changed = TRUE;
 			}
 
