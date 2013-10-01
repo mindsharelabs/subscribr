@@ -104,11 +104,14 @@ $subscribr_options->addCode(
 	)
 );
 
+// import the default template $html_mail_body
+include(SUBSCRIBR_DIR_PATH.'/views/default-html-email-template.php');
+$this->options['enable_html_mail']['mail_body_html'] = apply_filters('subscribr_default_mail_body_html', $html_mail_body);
 
 $subscribr_html_mail[] = $subscribr_options->addCode(
 	'mail_body_html',
 	array(
-		 'std'    => '',
+		 'std'    => $html_mail_body,
 		 'desc'   => __('This email template will be used for HTML email notifications when new posts are published', 'subscribr'),
 		 'name'   => __('Email Body (HTML)', 'subscribr'),
 		 'syntax' => 'html',
