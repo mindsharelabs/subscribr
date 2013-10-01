@@ -1,5 +1,6 @@
 /* Common Rules for all fields. */
 /*.form-table td.at-field { border:1px solid #DDD; padding:10px 10px 20px; margin:0px; font-family:"HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif; }*/
+.sections .form-table { margin-bottom:10px; }
 .at-label {
 	margin:0 !important;
 	padding:10px 0 0;

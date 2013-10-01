@@ -105,13 +105,13 @@ $subscribr_options->addCode(
 );
 
 
-$subscribr_plain_text[] = $subscribr_options->addCode(
-	'maintenance_mode_css',
+$subscribr_html_mail[] = $subscribr_options->addCode(
+	'mail_body_html',
 	array(
 		 'std'    => '',
 		 'desc'   => __('This email template will be used for HTML email notifications when new posts are published', 'subscribr'),
-		 'syntax' => 'html',
 		 'name'   => __('Email Body (HTML)', 'subscribr'),
+		 'syntax' => 'html',
 	),
 	TRUE
 );
@@ -121,7 +121,7 @@ $subscribr_options->addCondition(
 	array(
 		 'name' => __('Enable HTML email', 'subscribr'),
 		 'std'  => FALSE,
-		 'fields' => $subscribr_plain_text,
+		 'fields' => $subscribr_html_mail,
 		 'desc' => __('Enable or disable HTML email messages.', 'subscribr'),
 	)
 );
