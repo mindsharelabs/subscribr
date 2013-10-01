@@ -125,7 +125,7 @@ $subscribr_options->addCondition(
 		 'name' => __('Enable HTML email', 'subscribr'),
 		 'std'  => FALSE,
 		 'fields' => $subscribr_html_mail,
-		 'desc' => __('Enable or disable HTML email messages.', 'subscribr'),
+		 //'desc' => __('Enable or disable HTML email messages.', 'subscribr'),
 	)
 );
 
