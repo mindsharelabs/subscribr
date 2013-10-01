@@ -46,6 +46,7 @@ Domain Path: /lang
  * Premium features:
  *
  * @todo      - SMS text messages
+ * @todo      - send PDF attachment
  * @todo      - add integration with 3rd-party SMTP servers and/or advanced SMTP settings
  * @todo      - add integration with MailChimp/Mandrill
  * @todo      - add integration with Constant Contact
@@ -146,7 +147,7 @@ if(!class_exists("Subscribr")) :
 
 			// add meta box
 			if(is_admin()) {
-				add_action('subscribr_post_defaults', array($this, 'add_out_out_meta_box'));
+				add_action('subscribr_post_defaults', array($this, 'add_opt_out_meta_box'));
 			}
 		}
 
@@ -176,7 +177,7 @@ if(!class_exists("Subscribr")) :
 			load_plugin_textdomain('subscribr', FALSE, SUBSCRIBR_PLUGIN_SLUG);
 		}
 
-		public function add_out_out_meta_box() {
+		public function add_opt_out_meta_box() {
 
 			include_once('views/meta-box.php');
 			new opt_out_meta_box($this->options);
