@@ -648,7 +648,7 @@ if(!class_exists('subscribr_options_framework')) :
 				delete_option($this->option_group);
 				?>
 				<div class="updated">
-					<p>All options have been removed from the database.
+					<p><?php _e('All options have been removed from the database.'); ?>
 						<?php if($this->project_path == 'PLUGIN') : ?>
 							<?php
 							if(!empty($this->project_slug)) {
@@ -673,7 +673,7 @@ if(!class_exists('subscribr_options_framework')) :
 				delete_option($this->option_group);
 				?>
 				<div class="updated">
-					<p>All options have been restored to their default values.</p>
+					<p><?php _e('All options have been restored to their default values.'); ?></p>
 				</div>
 			<?php
 			}
