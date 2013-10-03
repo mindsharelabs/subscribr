@@ -548,7 +548,7 @@ if(!class_exists("Subscribr")) :
 				//$headers[] = 'Content-type: text/html; charset=UTF-8';
 				$headers[] = 'Content-type: '.get_bloginfo('html_type').'; charset='.get_bloginfo('charset');
 				$message = $this->get_option('enable_html_mail');
-				$message = $message['mail_body_html'];
+				$message = stripslashes($message['mail_body_html']);
 			} else {
 				$message = $this->get_option('mail_body');
 			}
