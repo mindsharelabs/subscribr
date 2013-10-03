@@ -115,7 +115,7 @@ if(!class_exists("Subscribr")) :
 			add_action('init', array($this, 'options_init'));
 
 			// filesystem functions
-			add_action('wp_loaded', array($this, 'copy_default_templates'));
+			add_action('init', array($this, 'copy_default_templates'));
 
 			// load scripts, etc
 			add_action('wp_print_scripts', array($this, 'print_scripts'));
@@ -661,7 +661,7 @@ if(!class_exists("Subscribr")) :
 				$this->recursive_copy($from, $to);
 
 				// reset the custom template options option
-				$this->delete_option('use_custom_templates');
+				$this->update_option('use_custom_templates', FALSE);
 			}
 		}
 
@@ -869,6 +869,27 @@ if(!class_exists("Subscribr")) :
 				}
 			} else {
 				return FALSE;
+			}
+		}
+
+		/**
+		 * Sets an option in the database.
+		 *
+		 * @param $name
+		 * @param $value
+		 *
+		 * @return bool
+		 */
+		function update_option($name, $value) {
+			$name = trim($name);
+			if(empty($name)) {
+				return FALSE;
+			}
+
+			$options = get_option(SUBSCRIBR_OPTIONS);
+			if($options) {
+				$options[$name] = $value;
+				return update_option(SUBSCRIBR_OPTIONS, $options);
 			}
 		}
 

@@ -79,6 +79,11 @@ if(!class_exists('subscribr_options')) :
 				$option_changed = TRUE;
 			}
 
+			if(!array_key_exists('use_custom_templates', $this->options)) {
+				$this->options['use_custom_templates'] = apply_filters('subscribr_default_use_custom_templates', FALSE);
+				$option_changed = TRUE;
+			}
+
 			if(!array_key_exists('mail_body', $this->options)) {
 				// import the default template $mail_body
 				include(SUBSCRIBR_DIR_PATH.'/views/templates/email-template.php');

@@ -652,8 +652,8 @@ if(!class_exists('subscribr_options_framework')) :
 						<?php if($this->project_path == 'PLUGIN') : ?>
 							<?php
 							if(!empty($this->project_slug)) {
-							$deactivate_url = 'plugins.php?action=deactivate&amp;plugin='.$this->project_slug.'/'.$this->project_slug.'.php';
-							$deactivate_url = wp_nonce_url($deactivate_url, 'deactivate-plugin_'.$this->project_slug.'/'.$this->project_slug.'.php');
+								$deactivate_url = 'plugins.php?action=deactivate&amp;plugin='.$this->project_slug.'/'.$this->project_slug.'.php';
+								$deactivate_url = wp_nonce_url($deactivate_url, 'deactivate-plugin_'.$this->project_slug.'/'.$this->project_slug.'.php');
 							} else {
 								$deactivate_url = admin_url('plugins.php');
 							}
@@ -3951,7 +3951,6 @@ if(!class_exists('subscribr_options_framework')) :
 		}
 
 		/**
-		 * get_option
 		 *
 		 * Retrieve an option from the options array.
 		 *
@@ -3966,13 +3965,7 @@ if(!class_exists('subscribr_options_framework')) :
 
 			$options = get_option($this->option_group);
 			if($options) {
-
-				// check if the option is a URL
-				if(stristr($name, 'uri')) {
-					return html_entity_decode($options[$name]);
-				} else {
-					return $options[$name];
-				}
+				return $options[$name];
 			} else {
 				return $this->error(array('msg' => 'get_option returned FALSE', 'echo' => FALSE, 'die' => FALSE));
 			}

@@ -141,7 +141,7 @@ if(!is_dir($to)) {
 		)
 	);
 } else {
-	$subscribr_options->addParagraph('Custom email templates have been installed to the <code>subscribr</code> folder in your theme. If you want to switch back to using the template editor on this screen, simply delete or rename the <code>subscribr</code> folder in your theme.');
+	$subscribr_options->addParagraph('Custom email templates have been installed to the <code>subscribr</code> folder in your theme. If you want to switch back to using the template editor(s) on this screen, simply delete or rename the <code>subscribr</code> folder in your theme.');
 }
 
 $subscribr_options->CloseTab();
@@ -228,19 +228,6 @@ $subscribr_options->addText(
 );
 
 $subscribr_options->CloseTab();
-
-/*
- * tab start
- */
-/*
-$subscribr_options->OpenTab($subscribr_tabs_keys[3]);
-$subscribr_options->Title($subscribr_tabs[$subscribr_tabs_keys[3]]);
-
-$subscribr_options->addParagraph(
-	'Feature not yet implemented.'
-);
-
-$subscribr_options->CloseTab();*/
 
 // action to allow plugging in extra options
 do_action('subscribr_option_add', $subscribr_options);

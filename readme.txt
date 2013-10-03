@@ -12,11 +12,14 @@ Allows WordPress users to subscribe to notifications for new posts, pages, and c
 
 == Description ==
 
-Allows WordPress users to subscribe to email notifications for new posts, pages, and custom types, filterable by taxonomies. The plugin supports tons of actions and filters too! Documentation will be coming soon.
+Allows WordPress users to subscribe to email notifications for new posts, pages, and custom types, filterable by taxonomies. The plugin supports tons of actions and filters too! More documentation will be coming soon.
 
 = Features =
 
 * send mail as plain text or HTML (by user preference)
+* integrated email template editor
+* option to use PHP template instead of integrated template editor
+* import and export all plugin settings
 
 = Upcoming Features =
 
