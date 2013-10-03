@@ -29,7 +29,8 @@ $subscribr_options_labels = array(
 	'Taxonomy Options',
 	'General Options',
 	//'Mail Scheduling',
-	//'Third Party Integration'
+	//'Installed Modules',
+	'Import &amp; Export',
 );
 // filter allows plugins to add new tabs
 $subscribr_options_labels = array_merge($subscribr_options_labels, apply_filters('subscribr_option_title', array()));
@@ -105,7 +106,7 @@ $subscribr_options->addCode(
 );
 
 // import the default template $html_mail_body
-include(SUBSCRIBR_DIR_PATH.'/views/default-html-email-template.php');
+include(SUBSCRIBR_DIR_PATH.'/views/templates/html-email-template.php');
 $this->options['enable_html_mail']['mail_body_html'] = apply_filters('subscribr_default_mail_body_html', $html_mail_body);
 
 $subscribr_html_mail[] = $subscribr_options->addCode(
@@ -122,12 +123,26 @@ $subscribr_html_mail[] = $subscribr_options->addCode(
 $subscribr_options->addCondition(
 	'enable_html_mail',
 	array(
-		 'name' => __('Enable HTML email', 'subscribr'),
-		 'std'  => FALSE,
+		 'name'   => __('Enable HTML email', 'subscribr'),
+		 'std'    => FALSE,
 		 'fields' => $subscribr_html_mail,
 		 //'desc' => __('Enable or disable HTML email messages.', 'subscribr'),
 	)
 );
+
+$to = apply_filters('subscribr_template_directory', SUBSCRIBR_TEMPLATE_PATH);
+if(!is_dir($to)) {
+	$subscribr_options->addCheckbox(
+		'use_custom_templates',
+		array(
+			 'name' => __('Copy default templates to theme folder', 'subscribr'),
+			 'desc' => __('Turn this to ON and save changes to copy the default email templates to your current theme folder. This option overrides the template(s) defined above.', 'subscribr'),
+			 'std'  => FALSE,
+		)
+	);
+} else {
+	$subscribr_options->addParagraph('Custom email templates have been installed to the <code>subscribr</code> folder in your theme. If you want to switch back to using the template editor on this screen, simply delete or rename the <code>subscribr</code> folder in your theme.');
+}
 
 $subscribr_options->CloseTab();
 
@@ -229,6 +244,16 @@ $subscribr_options->CloseTab();*/
 
 // action to allow plugging in extra options
 do_action('subscribr_option_add', $subscribr_options);
+
+
+
+/*
+ * tab start
+ */
+$subscribr_options->OpenTab($subscribr_tabs_keys[3]);
+$subscribr_options->Title($subscribr_tabs[$subscribr_tabs_keys[3]]);
+$subscribr_options->addImportExport();
+$subscribr_options->CloseTab();
 
 /*
  * Help Tabs

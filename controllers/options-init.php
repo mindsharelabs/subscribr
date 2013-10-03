@@ -75,13 +75,13 @@ if(!class_exists('subscribr_options')) :
 			}
 
 			if(!array_key_exists('trigger_action', $this->options)) {
-				$this->options['trigger_action'] = apply_filters('subscribr_default_trigger_action', __('publish_post', 'subscribr'));
+				$this->options['trigger_action'] = apply_filters('subscribr_default_trigger_action', 'publish_post');
 				$option_changed = TRUE;
 			}
 
 			if(!array_key_exists('mail_body', $this->options)) {
 				// import the default template $mail_body
-				include(SUBSCRIBR_DIR_PATH.'/views/default-email-template.php');
+				include(SUBSCRIBR_DIR_PATH.'/views/templates/email-template.php');
 				$this->options['mail_body'] = apply_filters('subscribr_default_mail_body', $mail_body);
 				$option_changed = TRUE;
 			}
@@ -134,6 +134,7 @@ if(!class_exists('subscribr_options')) :
 				add_action('register_form', array($this, 'user_profile_fields'));
 				add_action('user_register', array($this, 'update_user_meta'));
 			}
+
 		}
 
 		/**

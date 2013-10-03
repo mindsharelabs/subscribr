@@ -3,7 +3,7 @@
 Plugin Name: Subscribr
 Plugin URI: http://mindsharelabs.com/products/
 Description: Allows WordPress users to subscribe to email notifications for new posts, pages, and custom types, filterable by taxonomies.
-Version: 0.1.2
+Version: 0.1.3
 Author: Mindshare Studios, Inc.
 Author URI: http://mind.sh/are/
 License: GNU General Public License
@@ -31,37 +31,10 @@ Domain Path: /lang
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * ToDo List:
- *
- * @todo      - add option to separate diff taxonomies on profile update
- * @todo      - add widget
- * @todo      - add option to post notifications for update as well as new posts
- * @todo      - add scheduling options / digest mode
- * @todo      - add analytics options
- * @todo      - add minimum role option for notifications
- * @todo      - add view to see all current subscribers
- * @todo      - add double opt-in
- *
- * Premium features:
- *
- * @todo      - SMS text messages
- * @todo      - send PDF attachment
- * @todo      - add integration with 3rd-party SMTP servers and/or advanced SMTP settings
- * @todo      - add integration with MailChimp/Mandrill
- * @todo      - add integration with Constant Contact
- * @todo      - add integration with Aweber
- * @todo      - notification on site (like Facebook)
- * @todo      - add subscriber management to settings
- * @todo      - add CSV subscriber export
- * @todo      - add list management for Roles, use-case wholsale / retail
- *
- * Developer Notes:
- *
- * Made one minor CSS change to make Chosen work well on WordPress user profiles,
- * this will need to be retested if we upgrade Chosen.
  *
  * Changelog:
  *
+ * 0.1.3 - added custom email template options, added copy to theme folder option, added import/export options tab
  * 0.1.2 - bugfix for subscribr_profile_title filter,
  * 0.1.1 - Minor updates, fixed date_format, fix for only one notification getting sent
  * 0.1 - Initial release
@@ -92,6 +65,11 @@ if(!defined('SUBSCRIBR_OPTIONS')) {
 	define('SUBSCRIBR_OPTIONS', 'subscribr_options');
 }
 
+if(!defined('SUBSCRIBR_TEMPLATE_PATH')) {
+	define('SUBSCRIBR_TEMPLATE_PATH', trailingslashit(get_template_directory()).trailingslashit(SUBSCRIBR_PLUGIN_SLUG));
+	// e.g. /wp-content/themes/__ACTIVE_THEME__/subscribr
+}
+
 // check WordPress version
 global $wp_version;
 if(version_compare($wp_version, SUBSCRIBR_MIN_WP_VERSION, "<")) {
@@ -117,7 +95,7 @@ if(!class_exists("Subscribr")) :
 		 *
 		 * @var string
 		 */
-		private $version = '0.1.2';
+		private $version = '0.1.3';
 
 		/**
 		 * @var $options - holds all plugin options
@@ -135,6 +113,9 @@ if(!class_exists("Subscribr")) :
 
 			// setup the options page
 			add_action('init', array($this, 'options_init'));
+
+			// filesystem functions
+			add_action('wp_loaded', array($this, 'copy_default_templates'));
 
 			// load scripts, etc
 			add_action('wp_print_scripts', array($this, 'print_scripts'));
@@ -293,6 +274,7 @@ if(!class_exists("Subscribr")) :
 			$this->options = get_option(SUBSCRIBR_OPTIONS);
 			include_once('controllers/options-init.php');
 			new subscribr_options($this->options);
+			//$this->notification_send(162, 1); // debugging
 		}
 
 		/**
@@ -510,21 +492,14 @@ if(!class_exists("Subscribr")) :
 		}
 
 		/**
+		 * Handles send out notifications to subscribed users.
+		 *
 		 * @param $post_id
+		 * @param $user_id
 		 */
 		public function notification_send($post_id, $user_id) {
 
-			// grab the appropriate message template
-			$template_files = $this->locate_theme_templates();
-
-			// test for user defined PHP email templates in the 'subscribr' folder in the current theme (or child theme)
-			if(locate_template($template_files)) {
-				// a custom template was found
-				//@todo
-			} else {
-				// use the default template
-				//@todo
-			}
+			do_action('subscribr_pre_notification_send', $post_id, $user_id);
 
 			// get users details and send the message
 			$user = get_user_by('id', $user_id);
@@ -547,16 +522,86 @@ if(!class_exists("Subscribr")) :
 				$headers[] = 'MIME-Version: 1.0';
 				//$headers[] = 'Content-type: text/html; charset=UTF-8';
 				$headers[] = 'Content-type: '.get_bloginfo('html_type').'; charset='.get_bloginfo('charset');
-				$message = $this->get_option('enable_html_mail');
-				$message = stripslashes($message['mail_body_html']);
+				$message = $this->get_html_template();
 			} else {
-				$message = $this->get_option('mail_body');
+				$message = $this->get_plaintext_template();
 			}
 
+			// merge user variables, apply a final filter and send
 			$message = $this->merge_user_vars($message, $post_id, $user_id);
 			$message = apply_filters('subsribr_mail_body', $message);
+			$send_result = wp_mail($to, $mail_subject, $message, $headers);
+			do_action('subscribr_post_notification_send', $send_result);
+		}
 
-			wp_mail($to, $mail_subject, $message, $headers);
+		/**
+		 * Returns the contents of a custom HTML template or the contents
+		 * of the integrated editor if no template is found.
+		 *
+		 * @return mixed|string|void
+		 */
+		public function get_html_template() {
+
+			$html_template_exists = FALSE;
+
+			// allow template filenames to be changed by add-ons or theme functions
+			$html_template = apply_filters('subscribr_html_email_template', 'html-email-template.php');
+
+			// test for user defined PHP email template in the 'subscribr' folder in the current theme (or child theme)
+			$template_files = $this->locate_theme_templates();
+
+			if(is_array($template_files)) {
+				foreach($template_files as $file) {
+					// test to see if the files found in the directory match the template filename
+					if(basename($file) == $html_template) {
+						$html_template_exists = TRUE;
+						$html_template = $file;
+					}
+				}
+			}
+
+			if($html_template_exists) {
+				include(ABSPATH.$html_template);
+				return $html_mail_body; // variable defined in the included file
+			} else {
+				$html_template = $this->get_option('enable_html_mail');
+				$html_template = stripslashes($html_template['mail_body_html']); // @todo test to see if stripslashes needs to be applie to both
+				return $html_template;
+			}
+		}
+
+		/**
+		 * Returns the contents of a custom plain text email template or the contents
+		 * of the integrated editor if no template is found.
+		 *
+		 * @return mixed|string|void
+		 */
+		public function get_plaintext_template() {
+
+			$plain_text_template_exists = FALSE;
+
+			// allow template filenames to be changed by add-ons or theme functions
+			$plain_text_template = apply_filters('subscribr_plaintext_email_template', 'email-template.php');
+
+			// test for user defined PHP email subscribr in the 'subscribr' folder in the current theme (or child theme)
+			$template_files = $this->locate_theme_templates();
+
+			if(is_array($template_files)) {
+				foreach($template_files as $file) {
+					// test to see if the files found in the directory match the template filenames
+					if(basename($file) == $plain_text_template) {
+						$plain_text_template_exists = TRUE;
+						$plain_text_template = $file;
+					}
+				}
+			}
+
+			if($plain_text_template_exists) {
+				include(ABSPATH.$plain_text_template);
+				return $mail_body; // variable defined in the included file
+			} else {
+				return $this->get_option('mail_body');
+			}
 		}
 
 		/**
@@ -569,8 +614,7 @@ if(!class_exists("Subscribr")) :
 		 */
 		public function locate_theme_templates($dir = NULL, $exts = 'php') {
 			if(!isset($dir)) {
-				// e.g. wp-content/themes/__ACTIVE_THEME__/subscribr
-				$dir = trailingslashit(get_template_directory()).SUBSCRIBR_PLUGIN_SLUG;
+				$dir = apply_filters('subscribr_template_directory', SUBSCRIBR_TEMPLATE_PATH);
 			}
 
 			if(file_exists($dir)) {
@@ -591,6 +635,86 @@ if(!class_exists("Subscribr")) :
 			} else {
 				return FALSE; // template folder was not found
 			}
+		}
+
+		/**
+		 * Copies the default templates over to the the active theme directory.
+		 *
+		 * @param null $from
+		 * @param null $to
+		 *
+		 * @return mixed
+		 */
+		public function copy_default_templates($from = NULL, $to = NULL) {
+
+			if($this->get_option('use_custom_templates') && is_admin()) {
+
+				if(empty($from)) {
+					$from = SUBSCRIBR_DIR_PATH.'views/templates/';
+				}
+
+				if(empty($to)) {
+					$to = apply_filters('subscribr_template_directory', SUBSCRIBR_TEMPLATE_PATH);
+				}
+
+				// copy the template to the current theme
+				$this->recursive_copy($from, $to);
+
+				// reset the custom template options option
+				$this->delete_option('use_custom_templates');
+			}
+		}
+
+		/**
+		 * Copies a directory recursively.
+		 *
+		 * @param $from
+		 * @param $to
+		 *
+		 * @return \WP_Error
+		 */
+		public function recursive_copy($from, $to) {
+
+			$dir = opendir($from);
+
+			// create the target folder
+			if(!is_dir($to)) {
+				if(!mkdir($to, 0755)) {
+					$notice = __('Could not copy the template files. Could not create the target directory. Try copying the files manually or checking your file permissions. ', 'subscribr');
+					$this->admin_notice($notice, 'error');
+					return new WP_Error('mkdir_failed', $notice);
+				}
+			} else {
+				// folder already exists
+				$notice = __('Could not copy the template files. The target directory already exists.', 'subscribr');
+				$this->admin_notice($notice);
+				return new WP_Error('mkdir_failed', $notice);
+			}
+
+			while(FALSE !== ($file = readdir($dir))) {
+				if(($file != '.') && ($file != '..')) {
+					if(is_dir($from.'/'.$file)) {
+						$this->recursive_copy($from.'/'.$file, $to.'/'.$file);
+					} else {
+						copy($from.'/'.$file, $to.'/'.$file);
+					}
+				}
+			}
+			closedir($dir);
+		}
+
+		/**
+		 * Outputs a notice to the admin screen.
+		 *
+		 * @param        $notice
+		 * @param string $level 'updated' or 'error'
+		 */
+		public function admin_notice($notice, $level = 'updated') {
+			if(is_admin()) : ?>
+				<div class="updated">
+					<p><?php echo $notice; ?></p>
+				</div>
+			<?php endif;
 		}
 
 		/**
@@ -745,6 +869,24 @@ if(!class_exists("Subscribr")) :
 				}
 			} else {
 				return FALSE;
+			}
+		}
+
+		/**
+		 * @param $name
+		 *
+		 * @return bool
+		 */
+		function delete_option($name = NULL) {
+			$name = trim($name);
+			if(empty($name)) {
+				return FALSE;
+			}
+
+			$options = get_option(SUBSCRIBR_OPTIONS);
+			if($options) {
+				$options[$name] = '';
+				return update_option(SUBSCRIBR_OPTIONS, $options);
 			}
 		}
 

@@ -3884,7 +3884,7 @@ if(!class_exists('subscribr_options_framework')) :
 			$file_name = 'exported_settings_'.date('d-m-y').'.txt';
 			header('HTTP/1.1 200 OK');
 			if(!current_user_can('edit_theme_options')) {
-				wp_die('<p>'.__('You do not have sufficient permissions to edit templates for this site.').'</p>');
+				wp_die('<p>'.__('You do not have sufficient permissions to edit subscribr for this site.').'</p>');
 			}
 			if($content === NULL || $file_name === NULL) {
 				wp_die('<p>'.__('Error Downloading file.').'</p>');
