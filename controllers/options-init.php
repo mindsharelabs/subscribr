@@ -106,6 +106,9 @@ if(!class_exists('subscribr_options')) :
 		 */
 		public function apply_options() {
 
+			// hook for adding additional actions with add-ons
+			do_action('subscribr_apply_options');
+
 			// action to send emails
 			$trigger_action = $this->options['trigger_action'];
 			$trigger_action = preg_replace('/\s+/', '', $trigger_action); // strip whitespace

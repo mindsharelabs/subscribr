@@ -88,7 +88,7 @@ $subscribr_options->addText(
 	array(
 		 'name' => __('Email subject', 'subscribr'),
 		 'std'  => __('A notification from %sitename%', 'subscribr'),
-		 'desc' => __('Available variables: %post_title%, %post_date%, %post_excerpt%, %permalink%,%site_name%, %site_url%, %user_ip%, %notification_label%, %notifications_label%, %profile_link%', 'subscribr')
+		 'desc' => __('Available variables: %post_title%, %post_type%, %post_date%, %post_excerpt%, %permalink%,%site_name%, %site_url%, %user_ip%, %notification_label%, %notifications_label%, %profile_link%', 'subscribr')
 	)
 );
 

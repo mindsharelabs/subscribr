@@ -4,7 +4,7 @@ Donate link: http://mind.sh/are/donate/
 Tags: email, notifications, subscribe, subscriptions, notify, alerts
 Requires at least: 3.5
 Tested up to: 3.6.1
-Stable tag: 0.1.1
+Stable tag: 0.1.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -14,7 +14,12 @@ Allows WordPress users to subscribe to notifications for new posts, pages, and c
 
 Allows WordPress users to subscribe to email notifications for new posts, pages, and custom types, filterable by taxonomies. The plugin supports tons of actions and filters too! Documentation will be coming soon.
 
+= Features =
+
+* send mail as plain text or HTML (by user preference)
+
 = Upcoming Features =
+
 * option to separate diff taxonomies on profile update
 * widget
 * option to post notifications for update as well as new posts
@@ -42,9 +47,15 @@ Support development with a donation and let us know what features are most impor
 
 == Frequently Asked Questions ==
 
-= No questions yet =
+= How do I use the plugin? =
 
-Please ask one on the support forum!
+Visit the Subscribr settings page (`Settings > Subscribr`) to configure plugin options.
+
+By default your WordPress users will be able to setup any subscription choices from their profile page.
+
+= Got a question? =
+
+Please ask it on the support forum!
 
 == Screenshots ==
 
@@ -52,6 +63,10 @@ Please ask one on the support forum!
 1. The user profile options screenshot-2.png
 
 == Changelog ==
+
+= 0.1.2 =
+* added html/plain text options
+* minor bugfixes
 
 = 0.1.1 =
 * Updated Readme.txt
