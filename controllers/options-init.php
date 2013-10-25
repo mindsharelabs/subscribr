@@ -55,6 +55,14 @@ if(!class_exists('subscribr_options')) :
 				$this->options['enabled_terms'] = apply_filters('subscribr_default_taxonomies', FALSE);
 				$option_changed = TRUE;
 			}
+			if(!array_key_exists('enable_all_types', $this->options)) {
+				$this->options['enable_all_types'] = apply_filters('subscribr_default_enable_all_types', TRUE);
+				$option_changed = TRUE;
+			}
+			if(!array_key_exists('enabled_types', $this->options)) {
+				$this->options['enabled_types'] = apply_filters('subscribr_default_types', FALSE);
+				$option_changed = TRUE;
+			}
 			if(!array_key_exists('from_name', $this->options)) {
 				$this->options['from_name'] = apply_filters('subscribr_default_from_name', get_bloginfo('name'));
 				$option_changed = TRUE;

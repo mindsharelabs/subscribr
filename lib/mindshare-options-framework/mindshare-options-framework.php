@@ -2,7 +2,7 @@
 /**
  * The Mindshare Options Framework is a flexible, lightweight framework for creating WordPress theme and plugin options screens.
  *
- * @version        0.3.4
+ * @version        0.3.5
  * @author         Mindshare Studios, Inc.
  * @copyright      Copyright (c) 2013
  * @link           http://www.mindsharelabs.com/documentation/
@@ -22,7 +22,7 @@
  * Changelog:
  *
  *
- * 0.3.5 - added addTypes field
+ * 0.3.5 - added addPostTypes field
  * 0.3.4 - some refactoring, styling for checkbox lists
  * 0.3.3 - updated codemirror
  * 0.3.2 - fixed issue with code fields. css updates
@@ -2058,11 +2058,19 @@ if(!class_exists('subscribr_options_framework')) :
 			// checkbox_list
 			if('checkbox_list' == $options['type']) {
 				foreach($terms as $term) {
-					echo "<input type='checkbox' name='{$field['id']}[]' value='$term->slug'".checked(in_array($term->slug, $meta), TRUE, FALSE)." /> $term->name  <br />";
+					echo "<input type='checkbox' class='{$field['id']}' name='{$field['id']}[]' value='$term->slug'".checked(in_array($term->slug, $meta), TRUE, FALSE)." /> $term->name  <br />";
 				}
+				echo "<br /><input type='checkbox' name='all' id='selectall' class='{$field['id']}' /> <strong>Select/deselect all</strong></br>";
+				echo "<script type='text/javascript'>
+						jQuery('document').ready(function() {
+							jQuery('#selectall.{$field['id']}').click(function() {
+								jQuery('input.{$field['id']}').attr('checked', this.checked);
+							});
+						});
+						</script>";
 			} // select
 			else {
-				echo "<select name='{$field['id']}".($field['multiple'] ? "[]' multiple='multiple' style='height:auto'" : "'").">";
+				echo "<select id='{$field['id']}' name='{$field['id']}".($field['multiple'] ? "[]' multiple='multiple' style='height:auto'" : "'").">";
 				foreach($terms as $term) {
 					echo "<option value='$term->slug'".selected(in_array($term->slug, $meta), TRUE, FALSE).">$term->name</option>";
 				}
@@ -2073,34 +2081,47 @@ if(!class_exists('subscribr_options_framework')) :
 
 		/**
 		 * Show Post Types field.
-		 * used creating a category/tags/custom taxonomy checkboxlist or a select dropdown
+		 * used  to create a post types checkbox list or a select drop down.
 		 *
 		 * @param string $field
 		 * @param string $meta
 		 *
-		 * @since  0.1
+		 * @since  0.3.5
 		 * @access public
-		 * @uses   get_terms()
+		 * @uses   get_post_types()
 		 */
-		public function show_field_types($field, $meta) {
+		public function show_field_posttypes($field, $meta) {
+
 			global $post;
+
 			if(!is_array($meta)) {
 				$meta = (array) $meta;
 			}
 			$this->show_field_begin($field, $meta);
 			$options = $field['options'];
-			$terms = get_terms($options['taxonomy'], $options['args']);
+			$types = $options['types'];
+
 			// checkbox_list
 			if('checkbox_list' == $options['type']) {
-				foreach($terms as $term) {
-					echo "<input type='checkbox' name='{$field['id']}[]' value='$term->slug'".checked(in_array($term->slug, $meta), TRUE, FALSE)." /> $term->name  <br />";
+				foreach($types as $type) {
+
+					echo "<input type='checkbox' class='{$field['id']}' name='{$field['id']}[]' value='$type'".checked(in_array($type, $meta), TRUE, FALSE)." /> $type  <br />";
 				}
+				echo "<br /><input type='checkbox' name='all' id='selectall' class='{$field['id']}' /> <strong>Select/deselect all</strong></br>";
+				echo "<script type='text/javascript'>
+						jQuery('document').ready(function() {
+							jQuery('#selectall.{$field['id']}').click(function() {
+								jQuery('input.{$field['id']}').attr('checked', this.checked);
+							});
+						});
+						</script>";
 			} // select
 			else {
 				echo "<select name='{$field['id']}".($field['multiple'] ? "[]' multiple='multiple' style='height:auto'" : "'").">";
-				foreach($terms as $term) {
-					echo "<option value='$term->slug'".selected(in_array($term->slug, $meta), TRUE, FALSE).">$term->name</option>";
+				foreach($types as $type) {
+					echo "<option value='$type->slug'".selected(in_array($type->slug, $meta), TRUE, FALSE).">$type->name</option>";
 				}
+				echo "";
 				echo "</select>";
 			}
 			$this->show_field_end($field, $meta);
@@ -2108,7 +2129,7 @@ if(!class_exists('subscribr_options_framework')) :
 
 		/**
 		 * Show Role field.
-		 * used creating a Wordpress roles list checkboxlist or a select dropdown
+		 * used creating a WordPress roles list checkbox list or a select drop down.
 		 *
 		 * @param string $field
 		 * @param string $meta
@@ -3471,7 +3492,7 @@ if(!class_exists('subscribr_options_framework')) :
 				'type'    => 'taxonomy',
 				'id'      => $id,
 				'desc'    => '',
-				'name'    => 'Taxonomy field',
+				'name'    => 'Taxonomies',
 				'options' => $options
 			);
 			$new_field = array_merge($new_field, $args);
@@ -3502,28 +3523,28 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @return array
 		 */
-		public function addType($id, $options, $args, $repeater = FALSE) {
+		public function addPostTypes($id, $options, $args, $repeater = FALSE) {
 
-			$default_options = array(
-				'taxonomy' => 'category',
-				'type'     => 'select',
-				'args'     => array('hide_empty' => 0)
+			$temp = array(
+				'type'  => 'select', // type of field to display
+				'types' => get_post_types(), // post types to include
+				'args'  => array()
 			);
-			$options = array_merge($default_options, $options);
+			$options = array_merge($temp, $options);
 
-			$default_args = array(
-				'type'    => 'taxonomy',
+			$new_field = array(
 				'id'      => $id,
+				'type'    => 'posttypes', // tells the framework which show_field_ function to use
 				'desc'    => '',
-				'name'    => 'Taxonomy field',
+				'name'    => 'Post Types',
 				'options' => $options
 			);
-			$default_args = array_merge($default_args, $args);
+			$new_field = array_merge($new_field, $args);
 
 			if(FALSE === $repeater) {
-				$this->_fields[] = $default_args;
+				$this->_fields[] = $new_field;
 			} else {
-				return $default_args;
+				return $new_field;
 			}
 		}
 

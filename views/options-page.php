@@ -158,6 +158,32 @@ $subscribr_options->CloseTab();
 $subscribr_options->OpenTab($subscribr_tabs_keys[1]);
 $subscribr_options->Title($subscribr_tabs[$subscribr_tabs_keys[1]]);
 
+$subscribr_options->addSubtitle('Type Options');
+$subscribr_options->addCheckbox(
+	'enable_all_types',
+	array(
+		 'name' => __('Enable All Post Types', 'subscribr'),
+		 'std'  => TRUE,
+		 'desc' => __('Turning this ON will enable all post types, overriding the individual settings below.', 'subscribr')
+	)
+);
+
+$subscribr_options->addPostTypes(
+	'enabled_types',
+	array(
+		 'types' => $this->get_default_types(),
+		 'type'     => 'checkbox_list',
+	),
+	array(
+		 'name' => __('Enabled Post Types', 'subscribr'),
+		 'desc' => __('Choose the post types you want to allow users to subscribe to.', 'subscribr')
+	),
+	FALSE
+);
+
+
+
+$subscribr_options->addSubtitle('Taxonomy Options');
 $subscribr_options->addCheckbox(
 	'enable_all_terms',
 	array(
@@ -167,7 +193,6 @@ $subscribr_options->addCheckbox(
 	)
 );
 
-// term choices @todo add select all/none toggle to Mindshare Options Framework
 $subscribr_options->addTaxonomy(
 	'enabled_terms',
 	array(
@@ -176,7 +201,7 @@ $subscribr_options->addTaxonomy(
 	),
 	array(
 		 'name' => __('Enabled Terms', 'subscribr'),
-		 'desc' => __('Choose the terms you want to allow users to subscribe to from their profiles.', 'subscribr')
+		 'desc' => __('Choose the terms you want to allow users to subscribe to.', 'subscribr')
 	),
 	FALSE
 );

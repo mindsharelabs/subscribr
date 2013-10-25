@@ -235,7 +235,7 @@ if(!class_exists("Subscribr")) :
 		 */
 		public function do_scripts() {
 			// only enqueue if we're on the register screen, user profile, or Theme_My_Login pages (and the options are enabled)
-			if(($this->is_register() && $this->get_option('show_on_register')) || ($this->is_profile() && $this->get_option('show_on_profile')) || (class_exists('Theme_My_Login')) || ($this->is_user_edit() && $this->get_option('show_on_profile'))) {
+			if(($this->is_register() && $this->get_option('show_on_register')) || ($this->is_profile() && $this->get_option('show_on_profile')) || (class_exists('Theme_My_Login')) || ($this->is_user_edit() && $this->get_option('show_on_profile') || $this->is_settings_page())) {
 				$do_scripts = TRUE;
 			} else {
 				$do_scripts = FALSE;
@@ -562,10 +562,11 @@ if(!class_exists("Subscribr")) :
 
 			if($html_template_exists) {
 				include(ABSPATH.$html_template);
-				return $html_mail_body; // variable defined in the included file
+				/** @noinspection PhpUndefinedVariableInspection */ // variable defined in the included file
+				return $html_mail_body;
 			} else {
 				$html_template = $this->get_option('enable_html_mail');
-				$html_template = stripslashes($html_template['mail_body_html']); // @todo test to see if stripslashes needs to be applie to both
+				$html_template = stripslashes($html_template['mail_body_html']); // @todo test to see if stripslashes() needs to be applied to both
 				return $html_template;
 			}
 		}
@@ -598,7 +599,8 @@ if(!class_exists("Subscribr")) :
 
 			if($plain_text_template_exists) {
 				include(ABSPATH.$plain_text_template);
-				return $mail_body; // variable defined in the included file
+				/** @noinspection PhpUndefinedVariableInspection */ // variable defined in the included file
+				return $mail_body;
 			} else {
 				return $this->get_option('mail_body');
 			}
@@ -765,6 +767,8 @@ if(!class_exists("Subscribr")) :
 		}
 
 		/**
+		 * Setup the taxonomies that are enabled by default.
+		 *
 		 * @return array
 		 */
 		public function get_default_taxonomies() {
@@ -777,6 +781,21 @@ if(!class_exists("Subscribr")) :
 		}
 
 		/**
+		 * Setup the post types that are enabled by default.
+		 *
+		 * @return array
+		 */
+		public function get_default_types() {
+			$types = get_post_types();
+
+			$disabled_types = array('attachment', 'revision', 'nav_menu_item', 'acf', 'deprecated_log');
+			$disabled_types = apply_filters('subscribr_disabled_types', $disabled_types);
+
+			$types = array_diff($types, $disabled_types);
+			return $types;
+		}
+
+		/**
 		 * Replaces certain user and blog variables in $input string.
 		 *
 		 * Based on code from the Theme My Login plugin.
@@ -785,10 +804,10 @@ if(!class_exists("Subscribr")) :
 		 * @access public
 		 *
 		 *
-		 * @param string     $input_str          The input string
-		 * @param int|string $post_id            The post ID
-		 * @param int|string $user_id            User ID to replace user specific variables
-		 * @param array      $replacements       Misc variables => values replacements
+		 * @param string     $input_str    The input string
+		 * @param int|string $post_id      The post ID
+		 * @param int|string $user_id      User ID to replace user specific variables
+		 * @param array      $replacements Misc variables => values replacements
 		 *
 		 * @return string The $input string with variables replaced
 		 */
@@ -894,6 +913,8 @@ if(!class_exists("Subscribr")) :
 		}
 
 		/**
+		 * Deletes an option from the Subscribr options array and updates the database.
+		 *
 		 * @param $name
 		 *
 		 * @return bool
@@ -912,6 +933,8 @@ if(!class_exists("Subscribr")) :
 		}
 
 		/**
+		 * Tests if the current screen is the profile page.
+		 *
 		 * @return bool
 		 */
 		public function is_profile() {
@@ -919,6 +942,8 @@ if(!class_exists("Subscribr")) :
 		}
 
 		/**
+		 * Tests if the current screen is the user profile editor.
+		 *
 		 * @return bool
 		 */
 		public function is_user_edit() {
@@ -926,6 +951,8 @@ if(!class_exists("Subscribr")) :
 		}
 
 		/**
+		 * Tests if the current screen is the register page.
+		 *
 		 * @return bool
 		 */
 		public function is_register() {
@@ -933,10 +960,12 @@ if(!class_exists("Subscribr")) :
 		}
 
 		/**
+		 * Tests if the current screen is the settings page.
+		 *
 		 * @return bool
 		 */
 		public function is_settings_page() {
-			return in_array($GLOBALS['pagenow'], array('wp-register.php'));
+			return in_array($GLOBALS['pagenow'], array('options-general.php'));
 		}
 	}
 endif;
