@@ -21,6 +21,8 @@
  *
  * Changelog:
  *
+ *
+ * 0.3.5 - added addTypes field
  * 0.3.4 - some refactoring, styling for checkbox lists
  * 0.3.3 - updated codemirror
  * 0.3.2 - fixed issue with code fields. css updates
@@ -224,16 +226,16 @@ if(!class_exists('subscribr_options_framework')) :
 		/**
 		 * Builds a new Page
 		 *
-		 * @param $args         (string|mixed array) - Possible keys within $args:
-		 * @param menu          (string) - this the name of the parent Top-Level-Menu or a TopPage object to create this page as a sub menu to.
-		 * @param top           (string) - Slug for the New Top level Menu page to create.
-		 * @param page_title    (string) - The name of this page (good for Top level and sub menu pages)
-		 * @param menu_title    (string) - The test link for this page on the WordPress menu
-		 * @param capability    (string) (optional) - The capability needed to view the page (good for Top level and sub menu pages)
-		 * @param menu_slug     (string) - A unique string identifying your new menu (Top level Only)
-		 * @param icon_url      (string) (optional) - URL to the icon, decorating the Top-Level-Menu (Top level Only)
-		 * @param position      (string) (optional) - The position of the Menu in the ACP (Top level Only)
-		 * @param option_group  (string) (required) - the name of the option to create in the database
+		 * @param $args        (string|mixed array) - Possible keys within $args:
+		 * @param menu         (string) - this the name of the parent Top-Level-Menu or a TopPage object to create this page as a sub menu to.
+		 * @param top          (string) - Slug for the New Top level Menu page to create.
+		 * @param page_title   (string) - The name of this page (good for Top level and sub menu pages)
+		 * @param menu_title   (string) - The test link for this page on the WordPress menu
+		 * @param capability   (string) (optional) - The capability needed to view the page (good for Top level and sub menu pages)
+		 * @param menu_slug    (string) - A unique string identifying your new menu (Top level Only)
+		 * @param icon_url     (string) (optional) - URL to the icon, decorating the Top-Level-Menu (Top level Only)
+		 * @param position     (string) (optional) - The position of the Menu in the ACP (Top level Only)
+		 * @param option_group (string) (required) - the name of the option to create in the database
 		 */
 		public function __construct($args) {
 
@@ -846,7 +848,7 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @access   public
 		 *
-		 * @param $args     (mixed|array) contains everything needed to build the field
+		 * @param $args (mixed|array) contains everything needed to build the field
 		 *
 		 * @internal param $repeater (boolean)
 		 *
@@ -894,7 +896,7 @@ if(!class_exists('subscribr_options_framework')) :
 		/**
 		 * Does the repetitive tasks of adding a field
 		 *
-		 * @param $args     (mixed|array) contains everything needed to build the field
+		 * @param $args (mixed|array) contains everything needed to build the field
 		 *
 		 * @internal param $repeater (boolean)
 		 *
@@ -2070,6 +2072,41 @@ if(!class_exists('subscribr_options_framework')) :
 		}
 
 		/**
+		 * Show Post Types field.
+		 * used creating a category/tags/custom taxonomy checkboxlist or a select dropdown
+		 *
+		 * @param string $field
+		 * @param string $meta
+		 *
+		 * @since  0.1
+		 * @access public
+		 * @uses   get_terms()
+		 */
+		public function show_field_types($field, $meta) {
+			global $post;
+			if(!is_array($meta)) {
+				$meta = (array) $meta;
+			}
+			$this->show_field_begin($field, $meta);
+			$options = $field['options'];
+			$terms = get_terms($options['taxonomy'], $options['args']);
+			// checkbox_list
+			if('checkbox_list' == $options['type']) {
+				foreach($terms as $term) {
+					echo "<input type='checkbox' name='{$field['id']}[]' value='$term->slug'".checked(in_array($term->slug, $meta), TRUE, FALSE)." /> $term->name  <br />";
+				}
+			} // select
+			else {
+				echo "<select name='{$field['id']}".($field['multiple'] ? "[]' multiple='multiple' style='height:auto'" : "'").">";
+				foreach($terms as $term) {
+					echo "<option value='$term->slug'".selected(in_array($term->slug, $meta), TRUE, FALSE).">$term->name</option>";
+				}
+				echo "</select>";
+			}
+			$this->show_field_end($field, $meta);
+		}
+
+		/**
 		 * Show Role field.
 		 * used creating a Wordpress roles list checkboxlist or a select dropdown
 		 *
@@ -2396,9 +2433,9 @@ if(!class_exists('subscribr_options_framework')) :
 		 * @since  0.3
 		 * @access public
 		 *
-		 * @param          $id      string  id of the field
-		 * @param          $args    mixed|array
-		 * @param  boolean $repeater=false
+		 * @param          $id       string  id of the field
+		 * @param          $args     mixed|array
+		 * @param  boolean $repeater =false
 		 */
 		public function addTypo($id, $args, $repeater = FALSE) {
 			$new_field = array(
@@ -2428,11 +2465,11 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id       string  field id, i.e. the meta key
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'style' =>   // custom style for field, string optional
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'style' =>   // custom style for field, string optional
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater/conditional? true|false(default)
 		 *
 		 * @return array
@@ -2463,11 +2500,11 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id       string  field id, i.e. the meta key
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'style' =>   // custom style for field, string optional
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'style' =>   // custom style for field, string optional
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -2501,11 +2538,11 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id       string  field id, i.e. the meta key
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'style' =>   // custom style for field, string optional
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'style' =>   // custom style for field, string optional
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -2529,12 +2566,12 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id       string  field id, i.e. the meta key
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'style' =>   // custom style for field, string optional
-		 *    'syntax' =>   // syntax language to use in editor (php,javascript,css,html)
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'style' =>   // custom style for field, string optional
+		 *                  'syntax' =>   // syntax language to use in editor (php,javascript,css,html)
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -2609,10 +2646,10 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id       string  field id, i.e. the meta key
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -2643,11 +2680,11 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id       string  field id, i.e. the key
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'validation_function' => // validate function, string optional
-		 *    'fields' => list of fields to show conditionally.
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'validation_function' => // validate function, string optional
+		 *                  'fields' => list of fields to show conditionally.
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -2680,10 +2717,10 @@ if(!class_exists('subscribr_options_framework')) :
 		 * @param $id       string  field id, i.e. the meta key
 		 * @param $options  (array)  array of key => value pairs for select options
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array : remember to call: $checkbox_list = get_post_meta(get_the_ID(), 'meta_name', false);
@@ -2714,11 +2751,11 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id       string  field id, i.e. the meta key
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'style' =>   // custom style for field, string optional
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'style' =>   // custom style for field, string optional
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -2750,11 +2787,11 @@ if(!class_exists('subscribr_options_framework')) :
 		 * @param $id       string field id, i.e. the meta key
 		 * @param $options  (array)  array of key => value pairs for select options
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, (array) optional
-		 *    'multiple' => // select multiple values, optional. Default is false.
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, (array) optional
+		 *                  'multiple' => // select multiple values, optional. Default is false.
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -2787,11 +2824,11 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id       string field id, i.e. the meta key
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, (array) optional
-		 *    'multiple' => // select multiple values, optional. Default is false.
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, (array) optional
+		 *                  'multiple' => // select multiple values, optional. Default is false.
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -2887,11 +2924,11 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id       string field id, i.e. the meta key
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, (array) optional
-		 *    'multiple' => // select multiple values, optional. Default is false.
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, (array) optional
+		 *                  'multiple' => // select multiple values, optional. Default is false.
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -3177,10 +3214,10 @@ if(!class_exists('subscribr_options_framework')) :
 		 * @param $id       string field id, i.e. the meta key
 		 * @param $options  (array)  array of key => value pairs for sortable options  as value => label
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, (array) optional
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, (array) optional
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -3214,10 +3251,10 @@ if(!class_exists('subscribr_options_framework')) :
 		 * @param $id       string field id, i.e. the meta key
 		 * @param $options  (array)  array of key => value pairs for radio options
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -3249,11 +3286,11 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id       string  field id, i.e. the meta key
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'validation_function' => // validate function, string optional
-		 *    'format' => // date format, default yy-mm-dd. Optional. Default "'d MM, yy'"  See more formats here: http://goo.gl/Wcwxn
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'validation_function' => // validate function, string optional
+		 *                  'format' => // date format, default yy-mm-dd. Optional. Default "'d MM, yy'"  See more formats here: http://goo.gl/Wcwxn
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -3284,11 +3321,11 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id       string- field id, i.e. the meta key
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'validation_function' => // validate function, string optional
-		 *    'format' => // time format, default hh:mm. Optional. See more formats here: http://goo.gl/83woX
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'validation_function' => // validate function, string optional
+		 *                  'format' => // time format, default hh:mm. Optional. See more formats here: http://goo.gl/83woX
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -3319,10 +3356,10 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id       string  field id, i.e. the meta key
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -3352,9 +3389,9 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id       string  field id, i.e. the meta key
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -3378,11 +3415,11 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id       string  field id, i.e. the meta key
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'style' =>   // custom style for field, string optional Default 'width: 300px; height: 400px'
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'style' =>   // custom style for field, string optional Default 'width: 300px; height: 400px'
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -3407,20 +3444,19 @@ if(!class_exists('subscribr_options_framework')) :
 		/**
 		 *  Add Taxonomy field to Page
 		 *
-		 *
 		 * @since  0.1
 		 * @access public
 		 *
 		 * @param $id       string  field id, i.e. the meta key
 		 * @param $options  mixed|array options of taxonomy field
-		 *    'taxonomy' =>    // taxonomy name can be category,post_tag or any custom taxonomy default is category
-		 *    'type' =>  // how to show taxonomy? 'select' (default) or 'checkbox_list'
-		 *    'args' =>  // arguments to query taxonomy, see http://goo.gl/uAANN default ('hide_empty' => false)
+		 *                  'taxonomy' =>    // taxonomy name can be category,post_tag or any custom taxonomy default is category
+		 *                  'type' =>  // how to show taxonomy? 'select' (default) or 'checkbox_list'
+		 *                  'args' =>  // arguments to query taxonomy, see http://goo.gl/uAANN default ('hide_empty' => false)
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -3447,6 +3483,51 @@ if(!class_exists('subscribr_options_framework')) :
 		}
 
 		/**
+		 *  Add Post Type field to Page
+		 *
+		 * @since  0.3.5
+		 * @access public
+		 *
+		 * @param $id       string  field id, i.e. the meta key
+		 * @param $options  mixed|array options of taxonomy field
+		 *                  'taxonomy' => // taxonomy name can be category,post_tag or any custom taxonomy default is category
+		 *                  'type' => // how to show taxonomy? 'select' (default) or 'checkbox_list'
+		 *                  'args' => // arguments to query taxonomy, see http://goo.gl/uAANN default ('hide_empty' => false)
+		 * @param $args     mixed|array
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'validation_function' => // validate function, string optional
+		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
+		 *
+		 * @return array
+		 */
+		public function addType($id, $options, $args, $repeater = FALSE) {
+
+			$default_options = array(
+				'taxonomy' => 'category',
+				'type'     => 'select',
+				'args'     => array('hide_empty' => 0)
+			);
+			$options = array_merge($default_options, $options);
+
+			$default_args = array(
+				'type'    => 'taxonomy',
+				'id'      => $id,
+				'desc'    => '',
+				'name'    => 'Taxonomy field',
+				'options' => $options
+			);
+			$default_args = array_merge($default_args, $args);
+
+			if(FALSE === $repeater) {
+				$this->_fields[] = $default_args;
+			} else {
+				return $default_args;
+			}
+		}
+
+		/**
 		 *  Add WP_Roles field to Page
 		 *
 		 *
@@ -3455,12 +3536,12 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id       string  field id, i.e. the meta key
 		 * @param $options  mixed|array options of taxonomy field
-		 *    'type' =>  // how to show taxonomy? 'select' (default) or 'checkbox_list'
+		 *                  'type' =>  // how to show taxonomy? 'select' (default) or 'checkbox_list'
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -3493,14 +3574,14 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id       string  field id, i.e. the meta key
 		 * @param $options  mixed|array options of taxonomy field
-		 *    'post_type' =>    // post type name, 'post' (default) 'page' or any custom post type
+		 *                  'post_type' =>    // post type name, 'post' (default) 'page' or any custom post type
 		 *                  type' =>  // how to show posts? 'select' (default) or 'checkbox_list'
 		 *                  args' =>  // arguments to query posts, see http://goo.gl/is0yK default ('posts_per_page' => -1)
 		 * @param $args     mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'validation_function' => // validate function, string optional
+		 *                  'name' => // field name/label string optional
+		 *                  'desc' => // field description, string optional
+		 *                  'std' => // default value, string optional
+		 *                  'validation_function' => // validate function, string optional
 		 * @param $repeater bool  is this a field inside a repeater? true|false(default)
 		 *
 		 * @return array
@@ -3533,12 +3614,12 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @param $id   string  field id, i.e. the meta key
 		 * @param $args mixed|array
-		 *    'name' => // field name/label string optional
-		 *    'desc' => // field description, string optional
-		 *    'std' => // default value, string optional
-		 *    'style' =>   // custom style for field, string optional
-		 *    'validation_function' => // validate function, string optional
-		 *    'fields' => //fields to repeater
+		 *              'name' => // field name/label string optional
+		 *              'desc' => // field description, string optional
+		 *              'std' => // default value, string optional
+		 *              'style' =>   // custom style for field, string optional
+		 *              'validation_function' => // validate function, string optional
+		 *              'fields' => //fields to repeater
 		 *
 		 * @modified 0.4 added sortable option
 		 */
