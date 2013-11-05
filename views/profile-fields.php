@@ -43,7 +43,7 @@ wp_nonce_field('subscribr_inner_custom_box', 'subscribr_inner_custom_box_nonce')
 	<tr class="hidden-on-signup">
 		<th scope="row"><label><?php echo sprintf(__('Pause %s', 'subscribr'), $notifications_label); ?></label></th>
 		<td>
-			<label for="subscribr-pause">
+			<label for="subscribr-pause" class="muted">
 				<input name="subscribr-pause" type="checkbox" id="subscribr-pause" value="1" <?php checked($subscribr_pause, 1); ?>> <?php echo sprintf(__('Temporarily stop all %s', 'subscribr'), $notifications_label); ?>
 			</label>
 		</td>
@@ -51,7 +51,7 @@ wp_nonce_field('subscribr_inner_custom_box', 'subscribr_inner_custom_box_nonce')
 	<tr class="hidden-on-signup">
 		<th scope="row"><label><?php echo sprintf(__('Unsubscribe from all %s', 'subscribr'), $notifications_label); ?></label></th>
 		<td>
-			<label for="subscribr-unsubscribe">
+			<label for="subscribr-unsubscribe" class="muted">
 				<input name="subscribr-unsubscribe" type="checkbox" id="subscribr-unsubscribe" value="1" <?php checked($subscribr_unsubscribe, 1); ?>> <?php echo sprintf(__('Remove preferences and stop all %s.', 'subscribr'), $notifications_label); ?>
 			</label>
 		</td>
