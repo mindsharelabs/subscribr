@@ -3,7 +3,7 @@ Contributors: mindshare
 Donate link: http://mind.sh/are/donate/
 Tags: email, notifications, subscribe, subscriptions, notify, alerts
 Requires at least: 3.5
-Tested up to: 3.6.1
+Tested up to: 3.8.1
 Stable tag: 0.1.3
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -68,6 +68,7 @@ Please ask it on the support forum!
 == Changelog ==
 
 = 0.1.3 =
+* bugfixes, support for WP 3.8+
 * added custom email template options
 * added copy to theme folder option
 * added import/export options tab

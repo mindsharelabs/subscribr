@@ -72,6 +72,10 @@ if(!class_exists('opt_out_meta_box')) :
 				return $post_id;
 			}
 
+			// avoid undefined index notices (if box is unchecked)
+			if(!array_key_exists('subscribr_opt_out', $_POST)) {
+				$_POST['subscribr_opt_out'] = 0;
+			}
 			update_post_meta($post_id, '_subscribr_opt_out', $_POST['subscribr_opt_out']);
 		}
 

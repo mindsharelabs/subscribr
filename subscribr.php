@@ -3,7 +3,7 @@
 Plugin Name: Subscribr
 Plugin URI: http://mindsharelabs.com/products/
 Description: Allows WordPress users to subscribe to email notifications for new posts, pages, and custom types, filterable by taxonomies.
-Version: 0.1.3 DEV
+Version: 0.1.3
 Author: Mindshare Studios, Inc.
 Author URI: http://mind.sh/are/
 License: GNU General Public License
@@ -34,7 +34,7 @@ Domain Path: /lang
  *
  * Changelog:
  *
- * 0.1.3 - added custom email template options, added copy to theme folder option, added import/export options tab, added Type support & better Taxonomies support
+ * 0.1.3 - added custom email template options, added copy to theme folder option, added import/export options tab, added Type support & better Taxonomies support, fixes for WP 3.8, fixes to register screen, fix for is_register fn, disable main.js file for now, misc minor bugfixes
  * 0.1.2 - bugfix for subscribr_profile_title filter,
  * 0.1.1 - Minor updates, fixed date_format, fix for only one notification getting sent
  * 0.1 - Initial release
@@ -121,6 +121,7 @@ if(!class_exists("Subscribr")) :
 			add_action('wp_print_scripts', array($this, 'print_scripts'));
 			add_action('admin_head', array($this, 'head_scripts'));
 			add_action('wp_head', array($this, 'head_scripts'));
+			add_action('login_head', array($this, 'head_scripts'));
 
 			// action links
 			add_filter('plugin_action_links', array($this, 'plugin_action_links'), 10, 2);
@@ -187,11 +188,11 @@ if(!class_exists("Subscribr")) :
 					'deps'   => array('jquery')
 				);
 
-				$scripts[] = array(
+				/*$scripts[] = array(
 					'handle' => 'subscribr',
 					'src'    => SUBSCRIBR_DIR_URL.'js/main.js',
 					'deps'   => array('jquery')
-				);
+				);*/
 
 				foreach($scripts as $script) {
 					wp_enqueue_script($script['handle'], $script['src'], $script['deps'], $this->version);
@@ -214,17 +215,20 @@ if(!class_exists("Subscribr")) :
 		 *
 		 */
 		public function head_scripts() {
+
 			if($this->do_scripts()) {
 				?>
 				<script type="text/javascript">
-					function emailSubscribeInit() {
+					jQuery.noConflict();
+					jQuery(document).ready(function() {
+
 						jQuery('.chosen-select').chosen({
 							search_contains:           true,
 							width:                     '100%',
 							placeholder_text_multiple: '<?php echo apply_filters('subscribr_terms_search_placeholder', sprintf(__('Select or search for %s', 'subscribr'), $this->get_option('notifications_label'))); ?>',
 							no_results_text:           '<?php echo apply_filters('subscribr_terms_search_no_results', __('No results', 'subscribr')); ?>'
 						});
-					}
+					});
 				</script>
 			<?php
 			}
@@ -240,6 +244,7 @@ if(!class_exists("Subscribr")) :
 			} else {
 				$do_scripts = FALSE;
 			}
+
 			// allow add-on plugins to filter when scripts get enqueued
 			return apply_filters('subscribr_do_scripts', $do_scripts);
 		}
@@ -284,7 +289,11 @@ if(!class_exists("Subscribr")) :
 		public function email_profile_fields($user) {
 			if($this->get_option('enable_mail_notifications') && $this->get_option('enable_html_mail')) {
 				$notifications_label = $this->get_option('notifications_label');
-				$subscribr_send_html = get_user_meta($user->ID, 'subscribr-send-html', TRUE);
+				if($user) {
+					$subscribr_send_html = get_user_meta($user->ID, 'subscribr-send-html', TRUE);
+				} else {
+					$subscribr_send_html = FALSE;
+				}
 				include_once('views/email-profile-fields.php');
 			}
 		}
@@ -304,9 +313,16 @@ if(!class_exists("Subscribr")) :
 				return;
 			}
 
-			$subscribed_terms = get_user_meta($user->ID, 'subscribr-terms', TRUE);
-			$subscribr_pause = get_user_meta($user->ID, 'subscribr-pause', TRUE);
-			$subscribr_unsubscribe = get_user_meta($user->ID, 'subscribr-unsubscribe', TRUE);
+			if($user) {
+				$subscribed_terms = get_user_meta($user->ID, 'subscribr-terms', TRUE);
+				$subscribr_pause = get_user_meta($user->ID, 'subscribr-pause', TRUE);
+				$subscribr_unsubscribe = get_user_meta($user->ID, 'subscribr-unsubscribe', TRUE);
+			} else {
+				$subscribed_terms = array();
+				$subscribr_pause = FALSE;
+				$subscribr_unsubscribe = FALSE;
+			}
+
 			$notifications_label = $this->get_option('notifications_label');
 
 			do_action('subscribr_pre_profile');
@@ -409,27 +425,27 @@ if(!class_exists("Subscribr")) :
 					// query users with active notification preferences
 					$active_user_ids = new WP_User_Query(
 						array(
-							 'fields'     => 'id',
-							 //'fields' => 'all_with_meta',
-							 // check for any subscribed terms
-							 'meta_query' => array(
-								 array(
-									 'key'     => 'subscribr-terms',
-									 'value'   => '',
-									 'compare' => '!='
-								 ),
-								 // make sure notifications are not disabled or paused
-								 array(
-									 'key'     => 'subscribr-pause',
-									 'value'   => 1,
-									 'compare' => '!='
-								 ),
-								 array(
-									 'key'     => 'subscribr-unsubscribe',
-									 'value'   => 1,
-									 'compare' => '!='
-								 )
-							 )
+							'fields'     => 'id',
+							//'fields' => 'all_with_meta',
+							// check for any subscribed terms
+							'meta_query' => array(
+								array(
+									'key'     => 'subscribr-terms',
+									'value'   => '',
+									'compare' => '!='
+								),
+								// make sure notifications are not disabled or paused
+								array(
+									'key'     => 'subscribr-pause',
+									'value'   => 1,
+									'compare' => '!='
+								),
+								array(
+									'key'     => 'subscribr-unsubscribe',
+									'value'   => 1,
+									'compare' => '!='
+								)
+							)
 						)
 					);
 
@@ -956,7 +972,11 @@ if(!class_exists("Subscribr")) :
 		 * @return bool
 		 */
 		public function is_register() {
-			return in_array($GLOBALS['pagenow'], array('wp-register.php'));
+			if(in_array($GLOBALS['pagenow'], array('wp-login.php')) && (isset($_GET['action']) && $_GET['action'] == 'register')) {
+				return TRUE;
+			} else {
+				return FALSE;
+			}
 		}
 
 		/**
