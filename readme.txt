@@ -3,8 +3,8 @@ Contributors: mindshare
 Donate link: http://mind.sh/are/donate/
 Tags: email, notifications, subscribe, subscriptions, notify, alerts
 Requires at least: 3.5
-Tested up to: 3.8.1
-Stable tag: 0.1.3
+Tested up to: 3.9.1
+Stable tag: 0.1.4
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -66,6 +66,9 @@ Please ask it on the support forum!
 1. The user profile options screenshot-2.png
 
 == Changelog ==
+
+= 0.1.4 =
+* Bugfixes for disabled post types
 
 = 0.1.3 =
 * bugfixes, support for WP 3.8+

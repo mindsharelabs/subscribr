@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: Subscribr
-Plugin URI: http://mindsharelabs.com/products/
+Plugin URI: https://mindsharelabs.com/downloads/subscribr/
 Description: Allows WordPress users to subscribe to email notifications for new posts, pages, and custom types, filterable by taxonomies.
-Version: 0.1.3
+Version: 0.1.4
 Author: Mindshare Studios, Inc.
 Author URI: http://mind.sh/are/
 License: GNU General Public License
@@ -15,7 +15,7 @@ Domain Path: /lang
 /**
  *
  * @author    Mindshare Studios, Inc.
- * @copyright Copyright (c) 2013
+ * @copyright Copyright (c) 2014
  * @link      http://www.mindsharelabs.com/documentation/
  *
  * This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,7 @@ Domain Path: /lang
  *
  * Changelog:
  *
+ * 0.1.4 - Bugfixes for disabled post types
  * 0.1.3 - added custom email template options, added copy to theme folder option, added import/export options tab, added Type support & better Taxonomies support, fixes for WP 3.8, fixes to register screen, fix for is_register fn, disable main.js file for now, misc minor bugfixes
  * 0.1.2 - bugfix for subscribr_profile_title filter,
  * 0.1.1 - Minor updates, fixed date_format, fix for only one notification getting sent
@@ -42,7 +43,7 @@ Domain Path: /lang
  */
 
 if(!defined('SUBSCRIBR_MIN_WP_VERSION')) {
-	define('SUBSCRIBR_MIN_WP_VERSION', '3.5');
+	define('SUBSCRIBR_MIN_WP_VERSION', '3.6');
 }
 
 if(!defined('SUBSCRIBR_PLUGIN_NAME')) {
@@ -95,7 +96,7 @@ if(!class_exists("Subscribr")) :
 		 *
 		 * @var string
 		 */
-		private $version = '0.1.3';
+		private $version = '0.1.4';
 
 		/**
 		 * @var $options - holds all plugin options
@@ -422,6 +423,12 @@ if(!class_exists("Subscribr")) :
 						return;
 					}
 
+					// quit if the post type is not enabled
+					$enabled_types = $this->get_enabled_types();
+					if(!is_array($enabled_types) || !in_array($post->post_type, $enabled_types)) {
+						return;
+					}
+
 					// query users with active notification preferences
 					$active_user_ids = new WP_User_Query(
 						array(
@@ -733,6 +740,30 @@ if(!class_exists("Subscribr")) :
 					<p><?php echo $notice; ?></p>
 				</div>
 			<?php endif;
+		}
+
+		/**
+		 * Determine what post types are enabled for email notification, if any.
+		 *
+		 */
+		public function get_enabled_types() {
+
+			$enabled_types = $this->get_option('enabled_types');
+			$all_types = $this->get_default_types();
+
+			if($this->get_option('enable_all_types')) {
+				// return all available types
+				return $all_types;
+			} elseif(is_array($enabled_types)) {
+
+				$enabled_types = array_unique($enabled_types);
+
+				// return all enabled post types
+				return $enabled_types;
+			} else {
+				// no types are enabled, exit now
+				return FALSE;
+			}
 		}
 
 		/**
