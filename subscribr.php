@@ -3,7 +3,7 @@
 Plugin Name: Subscribr
 Plugin URI: https://mindsharelabs.com/downloads/subscribr/
 Description: Allows WordPress users to subscribe to email notifications for new posts, pages, and custom types, filterable by taxonomies.
-Version: 0.1.4
+Version: 0.1.5
 Author: Mindshare Studios, Inc.
 Author URI: http://mind.sh/are/
 License: GNU General Public License
@@ -34,6 +34,7 @@ Domain Path: /lang
  *
  * Changelog:
  *
+ * 0.1.5 - CSS fixes, verified PHP 5.3 support, updated Chosen JS library, update screenshots, bugfix for removing user prefs
  * 0.1.4 - Bugfixes for disabled post types
  * 0.1.3 - added custom email template options, added copy to theme folder option, added import/export options tab, added Type support & better Taxonomies support, fixes for WP 3.8, fixes to register screen, fix for is_register fn, disable main.js file for now, misc minor bugfixes
  * 0.1.2 - bugfix for subscribr_profile_title filter,
@@ -96,7 +97,7 @@ if(!class_exists("Subscribr")) :
 		 *
 		 * @var string
 		 */
-		private $version = '0.1.4';
+		private $version = '0.1.5';
 
 		/**
 		 * @var $options - holds all plugin options
@@ -376,7 +377,7 @@ if(!class_exists("Subscribr")) :
 				// no terms were selected
 				$subscribr_terms = FALSE;
 			}
-			update_user_meta($user_id, 'subscribr-terms', $subscribr_terms);
+
 
 			if(array_key_exists('subscribr-pause', $_POST) && $_POST['subscribr-pause'] == 1) {
 				// the user is pausing
@@ -384,7 +385,7 @@ if(!class_exists("Subscribr")) :
 			} else {
 				$subscribr_pause = 0;
 			}
-			update_user_meta($user_id, 'subscribr-pause', $subscribr_pause);
+
 
 			if(array_key_exists('subscribr-unsubscribe', $_POST) && $_POST['subscribr-unsubscribe'] == 1) {
 				// the user is unsubscribing
@@ -395,6 +396,8 @@ if(!class_exists("Subscribr")) :
 				$subscribr_unsubscribe = 0;
 			}
 			update_user_meta($user_id, 'subscribr-unsubscribe', $subscribr_unsubscribe);
+			update_user_meta($user_id, 'subscribr-terms', $subscribr_terms);
+			update_user_meta($user_id, 'subscribr-pause', $subscribr_pause);
 
 			// hook to add additional user options in add-ons
 			do_action('subscribr_update_user_meta', $user_id, $_POST);
