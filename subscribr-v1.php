@@ -12,13 +12,11 @@ Text Domain: subscribr
 Domain Path: /lang
 */
 
-
 /**
  *
- * Copyright 2014  Mindshare Studios, Inc. (http://mind.sh/are/)
- *
- * Plugin template was forked from the WP Settings Framework by Gilbert Pellegrom http://dev7studios.com
- * and the WordPress Plugin Boilerplate by Christopher Lamm http://www.theantichris.com
+ * @author    Mindshare Studios, Inc.
+ * @copyright Copyright (c) 2014
+ * @link      http://www.mindsharelabs.com/documentation/
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 3, as
@@ -33,21 +31,11 @@ Domain Path: /lang
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ *
  */
 
-// deny direct access
-if(!function_exists('add_action')) {
-	header('Status: 403 Forbidden');
-	header('HTTP/1.1 403 Forbidden');
-	exit();
-}
-
-if(!defined('SUBSCRIBR_VERSION')) {
-	define('SUBSCRIBR_VERSION', '0.2');
-}
-
 if(!defined('SUBSCRIBR_MIN_WP_VERSION')) {
-	define('SUBSCRIBR_MIN_WP_VERSION', '3.9');
+	define('SUBSCRIBR_MIN_WP_VERSION', '3.8');
 }
 
 if(!defined('SUBSCRIBR_PLUGIN_NAME')) {
@@ -72,7 +60,7 @@ if(!defined('SUBSCRIBR_OPTIONS')) {
 
 if(!defined('SUBSCRIBR_TEMPLATE_PATH')) {
 	define('SUBSCRIBR_TEMPLATE_PATH', trailingslashit(get_template_directory()).trailingslashit(SUBSCRIBR_PLUGIN_SLUG));
-	// e.g. /wp-content/themes/__ACTIVE_THEME__/plugin-slug
+	// e.g. /wp-content/themes/__ACTIVE_THEME__/subscribr
 }
 
 // check WordPress version
@@ -81,16 +69,31 @@ if(version_compare($wp_version, SUBSCRIBR_MIN_WP_VERSION, "<")) {
 	exit(SUBSCRIBR_PLUGIN_NAME.' requires WordPress '.SUBSCRIBR_MIN_WP_VERSION.' or newer.');
 }
 
-if(!class_exists('Subscribr')) :
+// deny direct access
+if(!function_exists('add_action')) {
+	header('Status: 403 Forbidden');
+	header('HTTP/1.1 403 Forbidden');
+	exit();
+}
+
+if(!class_exists("Subscribr")) :
+
 	/**
 	 * Class Subscribr
 	 */
 	class Subscribr {
 
 		/**
-		 * @var subscribr_settings
+		 * The plugin version number.
+		 *
+		 * @var string
 		 */
-		private $settings_framework;
+		private $version = '0.1.5';
+
+		/**
+		 * @var $options - holds all plugin options
+		 */
+		public $options;
 
 		/**
 		 * Initialize the plugin. Set up actions / filters.
@@ -98,33 +101,8 @@ if(!class_exists('Subscribr')) :
 		 */
 		public function __construct() {
 
-			// i8n, uncomment for translation support
-			//add_action('plugins_loaded', array($this, 'load_textdomain'));
-
-			// Admin scripts
-			add_action('admin_enqueue_scripts', array($this, 'register_admin_scripts'));
-			add_action('admin_enqueue_scripts', array($this, 'register_admin_styles'));
-
-			// Plugin action links
-			add_filter('plugin_action_links', array($this, 'plugin_action_links'), 10, 2);
-
-			// Frontend scripts
-			add_action('wp_enqueue_scripts', array($this, 'register_scripts'));
-			add_action('wp_enqueue_scripts', array($this, 'register_styles'));
-
-			// load scripts, etc
-			add_action('wp_print_scripts', array($this, 'print_scripts'));
-			add_action('admin_head', array($this, 'head_scripts'));
-			add_action('wp_head', array($this, 'head_scripts'));
-			add_action('login_head', array($this, 'head_scripts'));
-
-			// Activation hooks
-			register_activation_hook(__FILE__, array($this, 'activate'));
-			register_deactivation_hook(__FILE__, array($this, 'deactivate'));
-
-			// Uninstall hook
-			register_uninstall_hook(SUBSCRIBR_DIR_PATH.'uninstall.php', NULL);
-
+			// i8n
+			add_action('plugins_loaded', array($this, 'load_textdomain'));
 
 			// setup the options page
 			add_action('init', array($this, 'options_init'));
@@ -132,20 +110,14 @@ if(!class_exists('Subscribr')) :
 			// filesystem functions
 			add_action('init', array($this, 'copy_default_templates'));
 
-			// Settings Framework
-			add_action('admin_menu', array($this, 'admin_menu'), 99);
-			require_once(SUBSCRIBR_DIR_PATH.'lib/settings-framework/settings-framework.php');
-			$this->settings_framework = new subscribr_settings(SUBSCRIBR_DIR_PATH.'views/settings.php', SUBSCRIBR_OPTIONS);
-			// Add an optional settings validation filter (recommended)
-			add_filter($this->settings_framework->get_option_group().'_validate', array($this, 'validate_settings'));
+			// load scripts, etc
+			add_action('wp_print_scripts', array($this, 'print_scripts'));
+			add_action('admin_head', array($this, 'head_scripts'));
+			add_action('wp_head', array($this, 'head_scripts'));
+			add_action('login_head', array($this, 'head_scripts'));
 
-			// uncomment to disable the Uninstall and Reset Default buttons
-			//$this->settings_framework->show_reset_button = FALSE;
-			//$this->settings_framework->show_uninstall_button = FALSE;
-
-			add_action('init', array($this, 'init'), 0, 0); // filterable init action
-
-			$this->run(); // non-filterable init action
+			// action links
+			add_filter('plugin_action_links', array($this, 'plugin_action_links'), 10, 2);
 
 			// add meta box
 			if(is_admin()) {
@@ -155,16 +127,6 @@ if(!class_exists('Subscribr')) :
 			// hooks for email notifications, setup up pretty much the same way that we would in a separate add-on
 			add_action('subscribr_profile_fields', array($this, 'email_profile_fields'));
 			add_action('subscribr_update_user_meta', array($this, 'email_update_user_meta'), 10, 2);
-		}
-
-		/**
-		 * Allows user to override the default action used to enqueue scripts.
-		 * See FAQ in readme.txt for usage.
-		 *
-		 */
-		public function init() {
-			$init_action = apply_filters('subscribr_init_action', 'init');
-			add_action($init_action, array($this, 'cdnjs_scripts'));
 		}
 
 		/**
@@ -182,21 +144,7 @@ if(!class_exists('Subscribr')) :
 		 * @return string
 		 */
 		public function get_version() {
-			return SUBSCRIBR_VERSION;
-		}
-
-		/**
-		 * @return string
-		 */
-		public function get_plugin_url() {
-			return SUBSCRIBR_DIR_URL;
-		}
-
-		/**
-		 * @return string
-		 */
-		public function get_plugin_path() {
-			return SUBSCRIBR_DIR_PATH;
+			return $this->version;
 		}
 
 		/**
@@ -204,178 +152,16 @@ if(!class_exists('Subscribr')) :
 		 *
 		 */
 		public function load_textdomain() {
-			load_plugin_textdomain(SUBSCRIBR_PLUGIN_SLUG, FALSE, SUBSCRIBR_DIR_PATH.'/lang');
+			load_plugin_textdomain('subscribr', FALSE, SUBSCRIBR_PLUGIN_SLUG);
 		}
 
 		/**
-		 * Activation
-		 */
-		public function activate() {
-		}
-
-		/**
-		 * Deactivation
-		 */
-		public function deactivate() {
-		}
-
-		/**
-		 * Install
-		 */
-		public function install() {
-		}
-
-		/**
-		 * WordPress options page
 		 *
 		 */
-		public function admin_menu() {
-			// top level page
-			//add_menu_page(__(SUBSCRIBR_PLUGIN_NAME, 'subscribr'), __(SUBSCRIBR_PLUGIN_NAME, 'subscribr'), 'manage_options', SUBSCRIBR_PLUGIN_SLUG, array($this,'settings_page'));
-			// Settings page
-			add_submenu_page('options-general.php', __(SUBSCRIBR_PLUGIN_NAME.' Settings', 'subscribr'), __(SUBSCRIBR_PLUGIN_NAME.' Settings', 'subscribr'), 'manage_options', SUBSCRIBR_PLUGIN_SLUG, array(
-				$this,
-				'settings_page'
-			));
-		}
+		public function add_opt_out_meta_box() {
 
-		/**
-		 *  Settings page
-		 *
-		 */
-		public function settings_page() {
-
-			?>
-			<div class="wrap">
-				<div id="icon-options-general" class="icon32"></div>
-				<h2><?php echo SUBSCRIBR_PLUGIN_NAME; ?></h2>
-				<?php
-				// Output settings-framework form
-				$this->settings_framework->settings();
-				?>
-			</div>
-			<?php
-
-			// Get settings
-			//$settings = $this->get_settings(SUBSCRIBR_OPTIONS);
-			//echo '<pre>'.print_r($settings, TRUE).'</pre>';
-
-			// Get individual setting
-			//$setting = $this->get_setting(SUBSCRIBR_OPTIONS, 'general', 'text');
-			//var_dump($setting);
-		}
-
-		/**
-		 * Settings validation
-		 *
-		 * @see $sanitize_callback from http://codex.wordpress.org/Function_Reference/register_setting
-		 *
-		 * @param $input
-		 *
-		 * @return mixed
-		 */
-		public function validate_settings($input) {
-			return $input;
-		}
-
-		/**
-		 * Converts the settings-framework filename to option group id
-		 *
-		 * @param $settings_file string settings-framework file
-		 *
-		 * @return string option group id
-		 */
-		public function get_option_group($settings_file) {
-			$option_group = preg_replace("/[^a-z0-9]+/i", "", basename($settings_file, '.php'));
-			return $option_group;
-		}
-
-		/**
-		 * Get the settings from a settings-framework file/option group
-		 *
-		 * @param $option_group string option group id
-		 *
-		 * @return array settings
-		 */
-		public function get_settings($option_group) {
-			return get_option($option_group);
-		}
-
-		/**
-		 * Get a setting from an option group
-		 *
-		 * @param $option_group string option group id
-		 * @param $section_id   string section id
-		 * @param $field_id     string field id
-		 *
-		 * @return mixed setting or false if no setting exists
-		 */
-		public function get_setting($option_group, $section_id, $field_id) {
-			$options = get_option($option_group);
-			if(isset($options[$option_group.'_'.$section_id.'_'.$field_id])) {
-				return $options[$option_group.'_'.$section_id.'_'.$field_id];
-			}
-			return FALSE;
-		}
-
-		/**
-		 * Delete all the saved settings from a settings-framework file/option group
-		 *
-		 * @param $option_group string option group id
-		 */
-		public function delete_settings($option_group) {
-			delete_option($option_group);
-		}
-
-		/**
-		 * Deletes a setting from an option group
-		 *
-		 * @param $option_group string option group id
-		 * @param $section_id   string section id
-		 * @param $field_id     string field id
-		 *
-		 * @return mixed setting or false if no setting exists
-		 */
-		public function delete_setting($option_group, $section_id, $field_id) {
-			$options = get_option($option_group);
-			if(isset($options[$option_group.'_'.$section_id.'_'.$field_id])) {
-				$options[$option_group.'_'.$section_id.'_'.$field_id] = NULL;
-				return update_option($option_group, $options);
-			}
-			return FALSE;
-		}
-
-
-
-		/**
-		 * Enqueue and register JavaScript
-		 */
-		public function register_admin_scripts() {
-
-			/*wp_register_script('subscribr', SUBSCRIBR_DIR_URL.'/assets/js/subscribr.js');
-			$translation_array = array(
-				'js_handle' => __('Text to use in JavaScript', 'subscribr')
-			);
-			wp_localize_script('subscribr', 'subscribr_text', $translation_array);
-			wp_enqueue_script('subscribr');*/
-		}
-
-		/**
-		 * Enqueue and register Adnmin CSS
-		 */
-		public function register_admin_styles() {
-		}
-
-		/**
-		 * Enqueue and register JavaScript
-		 */
-		public function register_scripts() {
-		}
-
-		/**
-		 * Enqueue and register CSS
-		 */
-		public function register_styles() {
+			include_once('views/meta-box.php');
+			new opt_out_meta_box($this->options);
 		}
 
 		/**
@@ -471,16 +257,6 @@ if(!class_exists('Subscribr')) :
 				array_unshift($links, $settingslink);
 			}
 			return $links;
-		}
-
-		/**
-		 * Adds a metabox to the editing screen too stop notification
-		 * on individual posts
-		 *
-		 */
-		public function add_opt_out_meta_box() {
-			include_once('views/meta-box.php');
-			new opt_out_meta_box($this->options);
 		}
 
 		/**
@@ -1237,7 +1013,8 @@ if(!class_exists('Subscribr')) :
 			return in_array($GLOBALS['pagenow'], array('options-general.php'));
 		}
 	}
-
 endif;
 
-$subscribr = new Subscribr();
+$subscribr = new Subscribr;
+
+

@@ -3,8 +3,8 @@ Contributors: mindshare
 Donate link: http://mind.sh/are/donate/
 Tags: email, notifications, subscribe, subscriptions, notify, alerts
 Requires at least: 3.5
-Tested up to: 3.9.1
-Stable tag: 0.1.5
+Tested up to: 3.9.2
+Stable tag: 0.2
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -66,6 +66,9 @@ Please ask it on the support forum!
 1. The user profile options screenshot-2.png
 
 == Changelog ==
+
+= 0.2 =
+* major rewrite, new options page, bugfixes, improved usability
 
 = 0.1.5 =
 * CSS fixes
