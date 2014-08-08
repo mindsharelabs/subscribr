@@ -4,7 +4,7 @@
  *
  * @version        0.3.5
  * @author         Mindshare Studios, Inc.
- * @copyright      Copyright (c) 2013
+ * @copyright      Copyright (c) 2014
  * @link           http://www.mindsharelabs.com/documentation/
  *
  * @credits        Forked from: Admin Page Class 0.9.9 by Ohad Raz http://bainternet.info
@@ -21,8 +21,7 @@
  *
  * Changelog:
  *
- *
- * 0.3.5 - added addPostTypes field
+ * 0.3.5 -  merging changes, disabled auto validation
  * 0.3.4 - some refactoring, styling for checkbox lists
  * 0.3.3 - updated codemirror
  * 0.3.2 - fixed issue with code fields. css updates
@@ -38,7 +37,7 @@
  * @todo           add more filters and actions
  * @todo           make cases and naming consistent
  * @todo           Better Typography field. Figure tou a way to dynamically get font weights from Google, etc. Add option to turn off color picker.
- * @todo           ADD custom PHP field
+ * @todo           ADD custom PHP/HTML field
  * @todo           change case of vars to match mindshare standard
  *
  */
@@ -50,7 +49,7 @@ if(!class_exists('subscribr_options_framework')) :
 		 *
 		 * @var string
 		 */
-		private $version = '0.3.4';
+		private $version = '0.3.5';
 
 		/**
 		 * Contains all saved data for a page
@@ -377,9 +376,9 @@ if(!class_exists('subscribr_options_framework')) :
 			);
 			$this->args = array_merge($default, $this->args);
 			$top_id = add_menu_page($this->args['page_title'], $this->args['menu_title'], $this->args['capability'], $this->args['id'], array(
-																																			 $this,
-																																			 'DisplayPage'
-																																		), $this->args['icon_url'], $this->args['position']);
+				$this,
+				'DisplayPage'
+			), $this->args['icon_url'], $this->args['position']);
 			$page = add_submenu_page($top_id, $this->args['page_title'], $this->args['menu_title'], $this->args['capability'], $this->args['id'], array($this, 'DisplayPage'));
 			if($page) {
 				$this->_Slug = $page;
@@ -774,11 +773,12 @@ if(!class_exists('subscribr_options_framework')) :
 					<input type="hidden" name="action" value="save" />
 					<?php if($this->show_reset_button == TRUE) : ?>
 						<input class="button-secondary" type="button" value="Restore Defautls" onclick="document.getElementById('mindshare-framework-reset').style.display = 'block';document.getElementById('mindshare-framework-uninst').style.display = 'none';" />
-					<? endif; ?>
+					<?php endif; ?>
 					<?php if($this->show_uninstall_button == TRUE) : ?>
 						<input class="button-secondary" type="button" value="Uninstall" onclick="document.getElementById('mindshare-framework-uninst').style.display = 'block';document.getElementById('mindshare-framework-reset').style.display = 'none';" />
-					<? endif; ?>
+					<?php endif; ?>
 				</p>
+			</div>
 			</div>
 			</div>
 			</form>
@@ -1159,9 +1159,9 @@ if(!class_exists('subscribr_options_framework')) :
 			// Get Attachments
 			$attachments = get_posts(
 				array(
-					 'numberposts' => -1,
-					 'post_type'   => 'attachment',
-					 'post_parent' => $post_id
+					'numberposts' => -1,
+					'post_type'   => 'attachment',
+					'post_parent' => $post_id
 				)
 			);
 			// Loop through attachments, if not empty, delete it.
@@ -1197,8 +1197,9 @@ if(!class_exists('subscribr_options_framework')) :
 				}
 				$temp = get_option($this->args['option_group']);
 				$saved = $temp[$f[0]];
-				if(isset($saved[$f[1]][$f[2]])) {
-					unset($saved[$f[1]][$f[2]]);
+				//var_dump($saved[$f[1]]); die;
+				if(isset($saved[$f[1]])) {
+					unset($saved[$f[1]]);
 					$temp[$f[0]] = $saved;
 					update_option($this->args['option_group'], $temp);
 					$ok = wp_delete_attachment($attachment_id);
@@ -1780,7 +1781,7 @@ if(!class_exists('subscribr_options_framework')) :
 				echo "<textarea class='at-wysiwyg theEditor large-text' name='{$field['id']}' id='{$field['id']}' cols='60' rows='10'>{$meta}</textarea>";
 			} else {
 				// Use new wp_editor() since WP 3.3
-				wp_editor(stripslashes(stripslashes(html_entity_decode($meta))), $field['id'], array('editor_class' => 'at-wysiwyg'));
+				@wp_editor(stripslashes(stripslashes(html_entity_decode($meta))), $field['id'], array('editor_class' => 'at-wysiwyg'));
 			}
 			$this->show_field_end($field, $meta);
 		}
@@ -1836,7 +1837,7 @@ if(!class_exists('subscribr_options_framework')) :
 		public function show_field_image($field, $meta) {
 			$this->show_field_begin($field, $meta);
 			$html = wp_nonce_field("at-delete-mupload_{$field['id']}", "nonce-delete-mupload_".$field['id'], FALSE, FALSE);
-			$height = (isset($field['preview_height'])) ? $field['preview_height'] : '150px';
+			$height = (isset($field['preview_height'])) ? $field['preview_height'] : 'auto';
 			$width = (isset($field['preview_width'])) ? $field['preview_width'] : '150px';
 			if(is_array($meta)) {
 				if(isset($meta[0]) && is_array($meta[0])) {
@@ -1881,7 +1882,7 @@ if(!class_exists('subscribr_options_framework')) :
 			}
 			$html = '<select class="at-typography at-typography-size" name="'.esc_attr($field['id'].'[size]').'" id="'.esc_attr($field['id'].'_size').'">';
 			$op = '';
-			for($i = 9; $i < 71; $i++) {
+			for($i = 16; $i < 200; $i = $i + 8) {
 				$size = $i.'px';
 				$op .= '<option value="'.esc_attr($size).'">'.esc_html($size).'</option>';
 			}
@@ -1923,9 +1924,9 @@ if(!class_exists('subscribr_options_framework')) :
 			}
 			$html .= $op.'</select>';
 			// Font Color
-			$html .= "<input class='at-color' type='text' name='".$field['id']."[color]' id='".$field['id']."[color]' value='".$meta['color']."' size='6' />";
-			$html .= "<input type='button' class='at-color-select button' rel='".$field['id']."[color]' value='".__('Select a color')."'/>";
-			$html .= "<div style='display:none' class='at-color-picker' rel='".$field['id']."[color]'></div>";
+			$html .= "<input class='at-color' type='text' name='".$field['id']."[color]' id='".$field['id']."' value='".$meta['color']."' size='6' />";
+			$html .= "<input type='button' class='at-color-select button' rel='".$field['id']."' value='".__('Select a color')."'/>";
+			$html .= "<div style='display:none' class='at-color-picker' rel='".$field['id']."'></div>";
 			echo $html;
 			$this->show_field_end($field, $meta);
 		}
@@ -2060,7 +2061,7 @@ if(!class_exists('subscribr_options_framework')) :
 				foreach($terms as $term) {
 					echo "<input type='checkbox' class='{$field['id']}' name='{$field['id']}[]' value='$term->slug'".checked(in_array($term->slug, $meta), TRUE, FALSE)." /> $term->name  <br />";
 				}
-				echo "<br /><input type='checkbox' name='all' id='selectall' class='{$field['id']}' /> <strong>Select/deselect all</strong></br>";
+				echo "<br /><input type='checkbox' name='all' id='selectall' class='{$field['id']}' /> <strong>Select/deselect all</strong><br />";
 				echo "<script type='text/javascript'>
 						jQuery('document').ready(function() {
 							jQuery('#selectall.{$field['id']}').click(function() {
@@ -2107,7 +2108,7 @@ if(!class_exists('subscribr_options_framework')) :
 
 					echo "<input type='checkbox' class='{$field['id']}' name='{$field['id']}[]' value='$type'".checked(in_array($type, $meta), TRUE, FALSE)." /> $type  <br />";
 				}
-				echo "<br /><input type='checkbox' name='all' id='selectall' class='{$field['id']}' /> <strong>Select/deselect all</strong></br>";
+				echo "<br /><input type='checkbox' name='all' id='selectall' class='{$field['id']}' /> <strong>Select/deselect all</strong><br />";
 				echo "<script type='text/javascript'>
 						jQuery('document').ready(function() {
 							jQuery('#selectall.{$field['id']}').click(function() {
@@ -2359,11 +2360,11 @@ if(!class_exists('subscribr_options_framework')) :
 				$format = 'date' == $field['type'] ? 'yy-mm-dd' : ('time' == $field['type'] ? 'hh:mm' : '');
 				$field = array_merge(
 					array(
-						 'multiple'            => $multiple,
-						 'std'                 => $std,
-						 'desc'                => '',
-						 'format'              => $format,
-						 'validation_function' => ''
+						'multiple'            => $multiple,
+						'std'                 => $std,
+						'desc'                => '',
+						'format'              => $format,
+						'validation_function' => ''
 					), $field);
 			}
 		}
@@ -4043,8 +4044,8 @@ if(!class_exists('subscribr_options_framework')) :
 			$status = wp_handle_upload(
 				$_FILES[$imgid.'async-upload'],
 				array(
-					 'test_form' => TRUE,
-					 'action'    => 'plupload_action'
+					'test_form' => TRUE,
+					'action'    => 'plupload_action'
 				)
 			);
 			// send the uploaded file url in response
