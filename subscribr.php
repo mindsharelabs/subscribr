@@ -3,7 +3,7 @@
 Plugin Name: Subscribr
 Plugin URI: https://mindsharelabs.com/downloads/subscribr/
 Description: Allows WordPress users to subscribe to email notifications for new posts, pages, and custom types, filterable by taxonomies.
-Version: 0.1.6
+Version: 0.1.7
 Author: Mindshare Studios, Inc.
 Author URI: http://mind.sh/are/
 License: GNU General Public License
@@ -34,6 +34,7 @@ Domain Path: /lang
  *
  * Changelog:
  *
+ * 0.1.7 - Bugfix for custom taxonomies
  * 0.1.5 - CSS fixes, verified PHP 5.3 support, updated Chosen JS library, update screenshots, bugfix for removing user prefs
  * 0.1.4 - Bugfixes for disabled post types
  * 0.1.3 - added custom email template options, added copy to theme folder option, added import/export options tab, added Type support & better Taxonomies support, fixes for WP 3.8, fixes to register screen, fix for is_register fn, disable main.js file for now, misc minor bugfixes
@@ -97,7 +98,7 @@ if(!class_exists("Subscribr")) :
 		 *
 		 * @var string
 		 */
-		private $version = '0.1.6';
+		private $version = '0.1.7';
 
 		/**
 		 * @var $options - holds all plugin options
@@ -378,14 +379,12 @@ if(!class_exists("Subscribr")) :
 				$subscribr_terms = FALSE;
 			}
 
-
 			if(array_key_exists('subscribr-pause', $_POST) && $_POST['subscribr-pause'] == 1) {
 				// the user is pausing
 				$subscribr_pause = 1;
 			} else {
 				$subscribr_pause = 0;
 			}
-
 
 			if(array_key_exists('subscribr-unsubscribe', $_POST) && $_POST['subscribr-unsubscribe'] == 1) {
 				// the user is unsubscribing
@@ -416,7 +415,9 @@ if(!class_exists("Subscribr")) :
 				$post_id = $post_id->ID;
 			}
 
-			if(!isset($_POST['subscribr_opt_out'])) {
+			if(array_key_exists('subscribr_opt_out', $_POST) && !$this->is_true($_POST['subscribr_opt_out'])) {
+
+
 				if(!wp_is_post_revision($post_id)) {
 
 					$post = get_post($post_id);
@@ -842,6 +843,7 @@ if(!class_exists("Subscribr")) :
 			$disabled_types = apply_filters('subscribr_disabled_types', $disabled_types);
 
 			$types = array_diff($types, $disabled_types);
+
 			return $types;
 		}
 
@@ -1020,6 +1022,29 @@ if(!class_exists("Subscribr")) :
 		 */
 		public function is_settings_page() {
 			return in_array($GLOBALS['pagenow'], array('options-general.php'));
+		}
+
+		/**
+		 * Evaluates natural language strings to boolean equivalent
+		 *
+		 * All values defined as TRUE will return TRUE, anything else is FALSE.
+		 * Boolean values will be passed through.
+		 *
+		 * @since  0.1.7
+		 *
+		 * @param string $string        The natural language value
+		 * @param array  $true_synonyms A list strings that are TRUE
+		 *
+		 * @return boolean The boolean value of the provided text
+		 **/
+		public function is_true($string, $true_synonyms = array('yes', 'y', 'true', '1', 'on', 'open', 'affirmative', '+', 'positive')) {
+			if(is_array($string)) {
+				return FALSE;
+			}
+			if(is_bool($string)) {
+				return $string;
+			}
+			return in_array(strtolower(trim($string)), $true_synonyms);
 		}
 	}
 endif;
