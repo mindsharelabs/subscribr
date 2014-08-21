@@ -2,8 +2,8 @@
 Contributors: mindshare
 Donate link: http://mind.sh/are/donate/
 Tags: email, notifications, subscribe, subscriptions, notify, alerts
-Requires at least: 3.5
-Tested up to: 3.9.1
+Requires at least: 3.8
+Tested up to: 3.9.2
 Stable tag: 0.1.7
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
