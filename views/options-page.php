@@ -247,13 +247,12 @@ $subscribr_options->addText(
 		 'desc' => __('Enter the terminology to use for plural "notifications". E.g. "alerts", "subscriptions", "notifications", etc.', 'subscribr')
 	)
 );
-
 $subscribr_options->addText(
 	'trigger_action',
 	array(
-		 'name' => __('WordPress action to trigger notifications', 'subscribr'),
-		 'std'  => 'publish_post',
-		 'desc' => __('This option allows you to override the default WordPress hook used to trigger notifications. Separate multiple action names with commas. Default: <code><a href="http://codex.wordpress.org/Plugin_API/Action_Reference" target="_blank" title="Action Reference">publish_post</a></code>', 'subscribr')
+		'name' => __('WordPress action to trigger notifications', 'subscribr'),
+		'std'  => 'new_to_publish,pending_to_publish,draft_to_publish,future_to_publish',
+		'desc' => __('This option allows you to override the default WordPress hook used to trigger notifications. Separate multiple action names with commas. Default: <code><a href="http://codex.wordpress.org/Post_Status_Transitions" target="_blank" title="Action Reference">new_to_publish, pending_to_publish, draft_to_publish, future_to_publish</a></code>', 'subscribr')
 	)
 );
 
