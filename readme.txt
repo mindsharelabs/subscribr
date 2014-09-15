@@ -68,13 +68,16 @@ Please ask it on the support forum!
 
 == Upgrade Notice ==
 
+= 0.1.9 =
+Added "auto-draft" to list of default statuses (fix for WP 4.0+).
+
 = 0.1.8 =
 Fixes several issues. After upgrade the default action to trigger notifications (Subscribr General Options)  becomes "new_to_publish, pending_to_publish, draft_to_publish, future_to_publish" instead of "publish_post".
 
 == Changelog ==
 
 = 0.1.9 =
-Fix for auto-draft status.
+* Fix for auto-draft status.
 
 = 0.1.8 =
 * Change default trigger action to fix issue with custom taxonomies
