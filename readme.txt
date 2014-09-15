@@ -3,8 +3,8 @@ Contributors: mindshare
 Donate link: http://mind.sh/are/donate/
 Tags: email, notifications, subscribe, subscriptions, notify, alerts
 Requires at least: 3.8
-Tested up to: 3.9.2
-Stable tag: 0.1.8
+Tested up to: 4.0
+Stable tag: 0.1.9
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -72,6 +72,9 @@ Please ask it on the support forum!
 Fixes several issues. After upgrade the default action to trigger notifications (Subscribr General Options)  becomes "new_to_publish, pending_to_publish, draft_to_publish, future_to_publish" instead of "publish_post".
 
 == Changelog ==
+
+= 0.1.9 =
+Fix for auto-draft status.
 
 = 0.1.8 =
 * Change default trigger action to fix issue with custom taxonomies
