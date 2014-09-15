@@ -83,14 +83,14 @@ if(!class_exists('subscribr_options')) :
 			}
 
 			if(!array_key_exists('trigger_action', $this->options)) {
-				$this->options['trigger_action'] = apply_filters('subscribr_default_trigger_action', 'new_to_publish,pending_to_publish,draft_to_publish,future_to_publish');
+				$this->options['trigger_action'] = apply_filters('subscribr_default_trigger_action', 'new_to_publish,pending_to_publish,auto-draft_to_publish,draft_to_publish,future_to_publish');
 				$option_changed = TRUE;
 			}
 
 			// default trigger action changed, migrate if still using the old default
-			if(version_compare($this->get_version(), '0.1.8', '<=')) {
+			if(version_compare($this->get_version(), '0.1.9', '<=')) {
 				if(array_key_exists('trigger_action', $this->options) && $this->options['trigger_action'] == 'publish_post') {
-					$this->options['trigger_action'] = apply_filters('subscribr_default_trigger_action', 'new_to_publish,pending_to_publish,draft_to_publish,future_to_publish');
+					$this->options['trigger_action'] = apply_filters('subscribr_default_trigger_action', 'new_to_publish,pending_to_publish,auto-draft_to_publish,draft_to_publish,future_to_publish');
 					$option_changed = TRUE;
 				}
 			}

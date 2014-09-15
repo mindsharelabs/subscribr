@@ -3,7 +3,7 @@
 Plugin Name: Subscribr
 Plugin URI: https://mindsharelabs.com/downloads/subscribr/
 Description: Allows WordPress users to subscribe to email notifications for new posts, pages, and custom types, filterable by taxonomies.
-Version: 0.1.8
+Version: 0.1.9
 Author: Mindshare Studios, Inc.
 Author URI: http://mind.sh/are/
 License: GNU General Public License
@@ -34,6 +34,7 @@ Domain Path: /lang
  *
  * Changelog:
  *
+ * 0.1.9 - Bugfix for auto-draft action
  * 0.1.8 - Bugfix for email sends using default settings
  * 0.1.7 - Bugfix for custom taxonomies
  * 0.1.5 - CSS fixes, verified PHP 5.3 support, updated Chosen JS library, update screenshots, bugfix for removing user prefs
@@ -99,7 +100,7 @@ if(!class_exists("Subscribr")) :
 		 *
 		 * @var string
 		 */
-		private $version = '0.1.8';
+		private $version = '0.1.9';
 
 		/**
 		 * @var $options - holds all plugin options
@@ -411,12 +412,14 @@ if(!class_exists("Subscribr")) :
 		 */
 		public function queue_notifications($post_id) {
 
+
+
 			// different WP hooks will send either the post ID or the actual post object, so we need to test for both cases
 			if(is_a($post_id, 'WP_Post')) {
 				$post_id = $post_id->ID;
 			}
 
-			if(array_key_exists('subscribr_opt_out', $_POST) && !$this->is_true($_POST['subscribr_opt_out'])) {
+			if((array_key_exists('subscribr_opt_out', $_POST) && !$this->is_true($_POST['subscribr_opt_out'])) || !array_key_exists('subscribr_opt_out', $_POST)) {
 
 
 				if(!wp_is_post_revision($post_id)) {
@@ -490,6 +493,7 @@ if(!class_exists("Subscribr")) :
 
 					// remove duplicates so we don't send mail more than once!
 					$notify_user_ids = array_unique($notify_user_ids, SORT_NUMERIC);
+
 
 					if(!empty($notify_user_ids)) {
 
