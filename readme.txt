@@ -4,7 +4,7 @@ Donate link: http://mind.sh/are/donate/
 Tags: email, notifications, subscribe, subscriptions, notify, alerts
 Requires at least: 3.8
 Tested up to: 4.0
-Stable tag: 0.1.9
+Stable tag: 0.1.9.1
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -75,6 +75,10 @@ Added "auto-draft" to list of default statuses (fix for WP 4.0+).
 Fixes several issues. After upgrade the default action to trigger notifications (Subscribr General Options)  becomes "new_to_publish, pending_to_publish, draft_to_publish, future_to_publish" instead of "publish_post".
 
 == Changelog ==
+
+= 0.1.9.1 =
+* Bugfixes for terms selctions
+* Added subscribr_disabled_terms filter
 
 = 0.1.9 =
 * Fix for auto-draft status.

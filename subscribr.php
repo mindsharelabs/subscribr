@@ -3,7 +3,7 @@
 Plugin Name: Subscribr
 Plugin URI: https://mindsharelabs.com/downloads/subscribr/
 Description: Allows WordPress users to subscribe to email notifications for new posts, pages, and custom types, filterable by taxonomies.
-Version: 0.1.9
+Version: 0.1.9.1
 Author: Mindshare Studios, Inc.
 Author URI: http://mind.sh/are/
 License: GNU General Public License
@@ -34,12 +34,14 @@ Domain Path: /lang
  *
  * Changelog:
  *
+ * 0.1.9.1 - Bugfixes for terms selections, added subscribr_disabled_terms filter
  * 0.1.9 - Bugfix for auto-draft action
  * 0.1.8 - Bugfix for email sends using default settings
  * 0.1.7 - Bugfix for custom taxonomies
  * 0.1.5 - CSS fixes, verified PHP 5.3 support, updated Chosen JS library, update screenshots, bugfix for removing user prefs
  * 0.1.4 - Bugfixes for disabled post types
- * 0.1.3 - added custom email template options, added copy to theme folder option, added import/export options tab, added Type support & better Taxonomies support, fixes for WP 3.8, fixes to register screen, fix for is_register fn, disable main.js file for now, misc minor bugfixes
+ * 0.1.3 - added custom email template options, added copy to theme folder option, added import/export options tab, added Type support & better Taxonomies support, fixes for WP 3.8, fixes to register
+ * screen, fix for is_register fn, disable main.js file for now, misc minor bugfixes
  * 0.1.2 - bugfix for subscribr_profile_title filter,
  * 0.1.1 - Minor updates, fixed date_format, fix for only one notification getting sent
  * 0.1 - Initial release
@@ -88,7 +90,7 @@ if(!function_exists('add_action')) {
 	exit();
 }
 
-if(!class_exists("Subscribr")) :
+if(!class_exists("Subscribr")) {
 
 	/**
 	 * Class Subscribr
@@ -100,7 +102,7 @@ if(!class_exists("Subscribr")) :
 		 *
 		 * @var string
 		 */
-		private $version = '0.1.9';
+		private $version = '0.1.9.1';
 
 		/**
 		 * @var $options - holds all plugin options
@@ -268,6 +270,7 @@ if(!class_exists("Subscribr")) :
 				$settingslink = '<a href="options-general.php?page='.SUBSCRIBR_PLUGIN_SLUG.'-settings" title="'.__('Email Subscribe Settings', 'subscribr').'">'.__('Settings', 'subscribr').'</a>';
 				array_unshift($links, $settingslink);
 			}
+
 			return $links;
 		}
 
@@ -312,6 +315,7 @@ if(!class_exists("Subscribr")) :
 
 			// determine what taxonomies are enabled for email notification, if any
 			$enabled_taxonomies = $this->get_enabled_taxonomies();
+			$enabled_terms = $this->get_enabled_terms();
 
 			if(!is_array($enabled_taxonomies)) {
 				// no terms are enabled, exit now
@@ -412,15 +416,12 @@ if(!class_exists("Subscribr")) :
 		 */
 		public function queue_notifications($post_id) {
 
-
-
 			// different WP hooks will send either the post ID or the actual post object, so we need to test for both cases
 			if(is_a($post_id, 'WP_Post')) {
 				$post_id = $post_id->ID;
 			}
 
 			if((array_key_exists('subscribr_opt_out', $_POST) && !$this->is_true($_POST['subscribr_opt_out'])) || !array_key_exists('subscribr_opt_out', $_POST)) {
-
 
 				if(!wp_is_post_revision($post_id)) {
 
@@ -493,7 +494,6 @@ if(!class_exists("Subscribr")) :
 
 					// remove duplicates so we don't send mail more than once!
 					$notify_user_ids = array_unique($notify_user_ids, SORT_NUMERIC);
-
 
 					if(!empty($notify_user_ids)) {
 
@@ -665,6 +665,7 @@ if(!class_exists("Subscribr")) :
 					}
 				}
 				closedir($handle);
+
 				return $files;
 			} else {
 				return FALSE; // template folder was not found
@@ -716,12 +717,14 @@ if(!class_exists("Subscribr")) :
 				if(!mkdir($to, 0755)) {
 					$notice = __('Could not copy the template files. Could not create the target directory. Try copying the files manually or checking your file permissions. ', 'subscribr');
 					$this->admin_notice($notice, 'error');
+
 					return new WP_Error('mkdir_failed', $notice);
 				}
 			} else {
 				// folder already exists
 				$notice = __('Could not copy the template files. The target directory already exists.', 'subscribr');
 				$this->admin_notice($notice);
+
 				return new WP_Error('mkdir_failed', $notice);
 			}
 
@@ -749,6 +752,18 @@ if(!class_exists("Subscribr")) :
 					<p><?php echo $notice; ?></p>
 				</div>
 			<?php endif;
+		}
+
+		/**
+		 * Determine what taxonomy terms are enabled
+		 *
+		 */
+		public function get_enabled_terms() {
+			if($this->get_option('enable_all_terms')) {
+				return $this->get_default_terms();
+			} else {
+				return $this->get_option('enabled_terms');
+			}
 		}
 
 		/**
@@ -783,12 +798,31 @@ if(!class_exists("Subscribr")) :
 
 			$enabled_terms = $this->get_option('enabled_terms');
 			$all_taxonomies = $this->get_default_taxonomies();
+			$enabled_taxonomies = array();
 
 			if($this->get_option('enable_all_terms')) {
+
+				$enabled_types = $this->get_enabled_types();
+
+				foreach($all_taxonomies as $tax) {
+					foreach($enabled_types as $type) {
+
+						// check if the taxonomy is on an enabled post type
+						if(is_object_in_taxonomy($type, $tax)) {
+
+							// if so, add it to our array
+							$enabled_taxonomies[] = $tax;
+						}
+					}
+				}
+
 				// return all available taxonomies
-				return $all_taxonomies;
+				$enabled_taxonomies = array_unique($enabled_taxonomies);
+
+				// return all user enabled taxonomies
+
+				return $enabled_taxonomies;
 			} elseif($enabled_terms) {
-				$enabled_taxonomies = array();
 
 				// this bit gets nasty because, surprisingly, there is no
 				// WP function to lookup a taxonomy from just a `term_id`
@@ -814,12 +848,28 @@ if(!class_exists("Subscribr")) :
 
 				$enabled_taxonomies = array_unique($enabled_taxonomies);
 
+				//mapi_var_dump($enabled_taxonomies,1);
 				// return all user enabled taxonomies
 				return $enabled_taxonomies;
 			} else {
 				// no terms are enabled, exit now
 				return FALSE;
 			}
+		}
+
+		/**
+		 * Setup the terms that are enabled by default.
+		 *
+		 */
+		public function get_default_terms() {
+			$terms = get_terms($this->get_default_taxonomies(), array('hide_empty' => FALSE, 'fields' => 'id=>slug'));
+			$disabled_terms = array('uncategorized');
+			$disabled_terms = apply_filters('subscribr_disabled_terms', $disabled_terms);
+
+			//mapi_var_dump($terms,1);
+			$terms = array_diff($terms, $disabled_terms);
+
+			return $terms;
 		}
 
 		/**
@@ -833,6 +883,7 @@ if(!class_exists("Subscribr")) :
 			$disabled_taxonomies = apply_filters('subscribr_disabled_taxonomies', $disabled_taxonomies);
 
 			$taxonomies = array_diff($taxonomies, $disabled_taxonomies);
+
 			return $taxonomies;
 		}
 
@@ -965,6 +1016,7 @@ if(!class_exists("Subscribr")) :
 			$options = get_option(SUBSCRIBR_OPTIONS);
 			if($options) {
 				$options[$name] = $value;
+
 				return update_option(SUBSCRIBR_OPTIONS, $options);
 			}
 		}
@@ -985,6 +1037,7 @@ if(!class_exists("Subscribr")) :
 			$options = get_option(SUBSCRIBR_OPTIONS);
 			if($options) {
 				$options[$name] = '';
+
 				return update_option(SUBSCRIBR_OPTIONS, $options);
 			}
 		}
@@ -1049,11 +1102,10 @@ if(!class_exists("Subscribr")) :
 			if(is_bool($string)) {
 				return $string;
 			}
+
 			return in_array(strtolower(trim($string)), $true_synonyms);
 		}
 	}
-endif;
+}
 
 $subscribr = new Subscribr;
-
-
