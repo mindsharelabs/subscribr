@@ -3,15 +3,14 @@
  * email-profile-fields.php
  *
  * @created   10/2/13 9:17 PM
- * @author    Mindshare Studios, Inc.
+ * @author    Mindshare Labs, Inc.
  * @copyright Copyright (c) 2013
  * @link      http://www.mindsharelabs.com/documentation/
- *
  */
 
 ?>
 
-<?php if($this->get_option('enable_html_mail')) : ?>
+<?php if ($this->get_option('enable_html_mail')) : ?>
 	<tr>
 		<th scope="row"><label><?php echo sprintf(__('Receive HTML Email %s', 'subscribr'), $notifications_label); ?></label></th>
 		<td>

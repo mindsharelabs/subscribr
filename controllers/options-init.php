@@ -3,8 +3,8 @@
  * options-init.php
  *
  * @created   9/17/13 3:55 PM
- * @author    Mindshare Studios, Inc.
- * @copyright Copyright (c) 2014
+ * @author    Mindshare Labs, Inc.
+ * @copyright Copyright (c) 2014 - 2017
  * @link      http://www.mindsharelabs.com/documentation/
  *
  */

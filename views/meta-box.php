@@ -1,16 +1,14 @@
 <?php
 /**
  * meta-box.php
- *
  * Adds an out-out option for notifications on the post edit screen.
  *
  * @created   9/25/13 11:31 AM
- * @author    Mindshare Studios, Inc.
+ * @author    Mindshare Labs, Inc.
  * @copyright Copyright (c) 2013
  * @link      http://www.mindsharelabs.com/documentation/
- *
  */
-if(!class_exists('opt_out_meta_box')) :
+if (!class_exists('opt_out_meta_box')) :
 
 	class opt_out_meta_box extends Subscribr {
 
@@ -58,25 +56,25 @@ if(!class_exists('opt_out_meta_box')) :
 			 * because save_post can be triggered at other times.
 			 */
 
-			if(!current_user_can(('edit_posts'))) {
+			if (!current_user_can(('edit_posts'))) {
 				return $post_id;
 			}
 
 			// Check if our nonce is set and valid
-			if(!isset($_POST['subscribr_inner_custom_box_nonce']) || !wp_verify_nonce($_POST['subscribr_inner_custom_box_nonce'], 'subscribr_inner_custom_box')) {
+			if (!isset($_POST[ 'subscribr_inner_custom_box_nonce' ]) || !wp_verify_nonce($_POST[ 'subscribr_inner_custom_box_nonce' ], 'subscribr_inner_custom_box')) {
 				return $post_id;
 			}
 
 			// If this is an autosave don't do anything
-			if(defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+			if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
 				return $post_id;
 			}
 
 			// avoid undefined index notices (if box is unchecked)
-			if(!array_key_exists('subscribr_opt_out', $_POST)) {
-				$_POST['subscribr_opt_out'] = 0;
+			if (!array_key_exists('subscribr_opt_out', $_POST)) {
+				$_POST[ 'subscribr_opt_out' ] = 0;
 			}
-			update_post_meta($post_id, '_subscribr_opt_out', $_POST['subscribr_opt_out']);
+			update_post_meta($post_id, '_subscribr_opt_out', $_POST[ 'subscribr_opt_out' ]);
 		}
 
 		/**
@@ -98,7 +96,7 @@ if(!class_exists('opt_out_meta_box')) :
 				<input name="subscribr_opt_out" type="checkbox" id="subscribr_opt_out" value="1" <?php checked($subscribr_opt_out, 1); ?>>
 				<?php echo __(sprintf('Prevent %1$s from being sent for this %2$s.', $this->notifications_label, get_post_type()), 'subscribr'); ?>
 			</label>
-		<?php
+			<?php
 		}
 	}
 endif;
